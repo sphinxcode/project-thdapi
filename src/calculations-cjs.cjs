@@ -5,6 +5,7 @@
 
 // Импорт для расчета позиций планет (CommonJS)
 const Swisseph = require('swisseph');
+const { getLocationInfo, getUTCOffset, convertToUTC } = require('./timezone-utils.cjs');
 
 // 64 ворот (gates) в Human Design с полными данными
 const GATES = {
@@ -306,8 +307,19 @@ async function calculateHumanDesign({
     const [year, month, day] = birthDate.split('-').map(Number);
     const [hour, minute] = birthTime.split(':').map(Number);
     
-    // Конвертация в Юлианскую дату
-    const jd = Swisseph.julday(year, month, day, hour + minute / 60, 1); // Gregorian calendar
+    // Получить информацию о location и timezone
+    const locationInfo = getLocationInfo(birthLocation);
+    const utcOffset = getUTCOffset(birthLocation, birthDate);
+    
+    // Конвертация local time в UTC (с учетом DST)
+    const utcData = convertToUTC(birthDate, birthTime, birthLocation);
+    
+    console.log(`Timezone: ${locationInfo.tz}, UTC offset: ${utcOffset}, DST considered`);
+    console.log(`Local: ${birthTime} → UTC: ${utcData.utcHour}:${utcData.utcMinute}`);
+    
+    // Конвертация в Юлианскую дату (используем UTC время)
+    const jd = Swisseph.julday(utcData.utcYear, utcData.utcMonth, utcData.utcDay, 
+                                utcData.utcHour + utcData.utcMinute / 60, 1); // Gregorian calendar
     
     // Расчет позиций всех планет
     const planets = [
@@ -363,6 +375,10 @@ async function calculateHumanDesign({
       birthDate,
       birthTime,
       birthLocation,
+      latitude: locationInfo.lat,
+      longitude: locationInfo.lon,
+      timezone: locationInfo.tz,
+      utcOffset: utcOffset,
       type,
       strategy,
       authority,
@@ -390,5 +406,9 @@ module.exports = {
   calculateHumanDesign,
   GATES,
   CENTER_GATES,
+  // Экспортируем timezone utils для использования в других модулях
+  getLocationInfo,
+  getUTCOffset,
+  convertToUTC,
 };
 
