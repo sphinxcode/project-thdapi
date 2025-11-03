@@ -11,18 +11,10 @@ const require = createRequire(import.meta.url);
 import express from 'express';
 import { spawn } from 'child_process';
 import readline from 'readline';
-import { calculateHumanDesignSimple as calculateHumanDesign } from './src/simple-calculations.js';
 
-// Try to use full version with Swiss Ephemeris if available
-let calculateHumanDesignFull = null;
-try {
-  const fullCalc = require('./src/calculations-cjs.cjs');
-  calculateHumanDesignFull = fullCalc.calculateHumanDesign;
-  console.log('✅ Swiss Ephemeris version loaded');
-} catch (error) {
-  console.log('⚠️  Swiss Ephemeris not available, using simplified version');
-  console.log('   Error:', error.message);
-}
+// Load Swiss Ephemeris version (required)
+const { calculateHumanDesign } = require('./src/calculations-cjs.cjs');
+console.log('✅ Swiss Ephemeris version loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,10 +46,8 @@ app.post('/api/human-design', async (req, res) => {
       });
     }
 
-    // Используем полную версию если доступна, иначе упрощенную
-    const calculator = calculateHumanDesignFull || calculateHumanDesign;
-    
-    const result = await calculator({
+    // Используем Swiss Ephemeris версию
+    const result = await calculateHumanDesign({
       birthDate,
       birthTime,
       birthLocation,

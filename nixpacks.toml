@@ -6,7 +6,7 @@ nixPkgs = ["nodejs-18_x", "python3", "gcc"]
 cmds = ["npm ci"]
 
 [phases.build]
-cmds = []
+cmds = ["npm rebuild swisseph"]
 
 [start]
 cmd = "npm start"
