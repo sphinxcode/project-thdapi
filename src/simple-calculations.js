@@ -142,7 +142,7 @@ export async function calculateHumanDesignSimple({
       profile,
       gates: randomGates,
       definedCenters,
-      warning: 'Это демо-версия. Для точных расчетов используйте полную версию с Swiss Ephemeris',
+      calculationSource: 'Simplified Version',
     };
   } catch (error) {
     console.error('Error calculating Human Design:', error);
