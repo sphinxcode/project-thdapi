@@ -249,16 +249,16 @@ async function calculateHumanDesign(birthDate, birthTime, birthLocation) {
       throw new Error(`Location not found: ${birthLocation}`);
     }
 
-    // Convert to UTC
-    const utcData = convertToUTC(birthDate, birthTime, locationInfo);
+    // Convert to UTC (pass birthLocation string, not locationInfo object)
+    const utcData = convertToUTC(birthDate, birthTime, birthLocation);
 
     // Calculate Julian Day
     const julianDay = await new Promise((resolve, reject) => {
       swisseph.swe_julday(
-        utcData.year,
-        utcData.month,
-        utcData.day,
-        utcData.hour,
+        utcData.utcYear,
+        utcData.utcMonth,
+        utcData.utcDay,
+        utcData.utcHour + (utcData.utcMinute / 60),
         swisseph.SE_GREG_CAL,
         (jd) => {
           if (jd.error) reject(new Error(jd.error));
@@ -344,7 +344,7 @@ async function calculateHumanDesign(birthDate, birthTime, birthLocation) {
         time: birthTime,
         location: birthLocation,
         coordinates: `${locationInfo.lat}°N, ${locationInfo.lon}°E`,
-        timezone: locationInfo.timezone
+        timezone: locationInfo.tz
       },
       type,
       authority,
