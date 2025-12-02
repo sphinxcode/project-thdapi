@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * HTTP Wrapper для Human Design MCP Server
- * Для использования на Railway или других платформах
+ * HTTP Wrapper for Human Design MCP Server
+ * With Bearer Token Authentication
  */
 
 import { createRequire } from 'module';
@@ -12,33 +12,59 @@ import express from 'express';
 import { spawn } from 'child_process';
 import readline from 'readline';
 
-// Load Swiss Ephemeris version (required)
+// Load Swiss Ephemeris version
 const { calculateHumanDesign } = require('./src/calculations-cjs.cjs');
 console.log('✅ Swiss Ephemeris version loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const API_KEY = process.env.API_KEY || 'your-secret-api-key-change-this';
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
+// Auth middleware
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized - Missing or invalid Authorization header',
+      message: 'Please provide: Authorization: Bearer YOUR_API_KEY'
+    });
+  }
+  
+  const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+  
+  if (token !== API_KEY) {
+    return res.status(403).json({
+      success: false,
+      error: 'Forbidden - Invalid API key'
+    });
+  }
+  
+  next();
+};
+
+// Public health check (no auth required)
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'human-design-mcp-server',
     version: '1.0.0-full',
     timestamp: new Date().toISOString(),
+    auth: 'enabled'
   });
 });
 
-// Main endpoint
-app.post('/api/human-design', async (req, res) => {
+// Protected: Main endpoint
+app.post('/api/human-design', authMiddleware, async (req, res) => {
   try {
     const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
 
-    // Валидация
+    // Validation
     if (!birthDate || !birthTime || !birthLocation) {
       return res.status(400).json({
         success: false,
@@ -46,7 +72,7 @@ app.post('/api/human-design', async (req, res) => {
       });
     }
 
-    // Используем Swiss Ephemeris версию
+    // Calculate using Swiss Ephemeris
     const result = await calculateHumanDesign({
       birthDate,
       birthTime,
@@ -69,10 +95,9 @@ app.post('/api/human-design', async (req, res) => {
   }
 });
 
-// Альтернативный endpoint через MCP (если нужно)
-app.post('/api/mcp/calculate', async (req, res) => {
+// Protected: Alternative MCP endpoint
+app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
   try {
-    // Запускаем MCP сервер через stdio
     const mcpServer = spawn('node', ['index-with-swiss.js']);
     
     const rl = readline.createInterface({
@@ -80,7 +105,6 @@ app.post('/api/mcp/calculate', async (req, res) => {
       output: mcpServer.stdin,
     });
 
-    // Отправка MCP запроса
     const request = {
       jsonrpc: '2.0',
       id: 1,
@@ -93,7 +117,6 @@ app.post('/api/mcp/calculate', async (req, res) => {
 
     mcpServer.stdin.write(JSON.stringify(request) + '\n');
 
-    // Чтение ответа
     rl.once('line', (line) => {
       try {
         const response = JSON.parse(line);
@@ -108,7 +131,6 @@ app.post('/api/mcp/calculate', async (req, res) => {
       mcpServer.kill();
     });
 
-    // Таймаут
     setTimeout(() => {
       mcpServer.kill();
       res.status(500).json({ success: false, error: 'Request timeout' });
@@ -125,20 +147,26 @@ app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
     version: '1.0.0-full',
+    auth: 'Bearer token required',
     endpoints: {
-      health: '/health',
-      calculate: '/api/human-design',
-      mcp: '/api/mcp/calculate',
+      health: '/health (public)',
+      calculate: '/api/human-design (protected)',
+      mcp: '/api/mcp/calculate (protected)',
     },
-    documentation: 'https://github.com/dvvolkovv/MCP_Human_design',
+    documentation: 'https://github.com/sphinxcode/humandesignmcp',
   });
 });
 
-// Запуск сервера
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Human Design MCP Server (HTTP) running on port ${PORT}`);
-  console.log(`📖 Health check: http://0.0.0.0:${PORT}/health`);
-  console.log(`🔗 API endpoint: http://0.0.0.0:${PORT}/api/human-design`);
+  console.log(`🚀 Human Design MCP Server running on port ${PORT}`);
+  console.log(`🔐 Auth: Bearer token enabled`);
+  console.log(`📖 Health: http://0.0.0.0:${PORT}/health`);
+  console.log(`🔗 API: http://0.0.0.0:${PORT}/api/human-design`);
+  
+  if (API_KEY === 'your-secret-api-key-change-this') {
+    console.warn('⚠️  WARNING: Using default API key! Set API_KEY environment variable.');
+  }
 });
 
 // Graceful shutdown
@@ -146,4 +174,3 @@ process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
   process.exit(0);
 });
-
