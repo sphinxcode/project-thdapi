@@ -98,144 +98,159 @@ async function findDesignDate(personalitySunLongitude, birthJulianDay) {
 }
 
 /**
+ * Helper function to safely get gate activation with error handling
+ */
+function safeGetGate(longitude, planetName) {
+  const activation = longitudeToGate(longitude);
+  if (!activation || activation.gate === null || activation.gate === undefined) {
+    throw new Error(`Failed to find gate for ${planetName} at ${longitude}°`);
+  }
+  return activation;
+}
+
+/**
  * Calculate all planetary activations for Personality or Design
  */
 async function calculateAllPlanets(julianDay) {
   const activations = {};
 
-  // Calculate Sun
-  const sunLong = await calculatePlanetPosition(julianDay, PLANETS.SUN);
-  const sunActivation = longitudeToGate(sunLong);
-  activations.Sun = {
-    longitude: sunLong,
-    gate: sunActivation.gate,
-    line: sunActivation.line,
-    sign: sunActivation.sign
-  };
+  try {
+    // Calculate Sun
+    const sunLong = await calculatePlanetPosition(julianDay, PLANETS.SUN);
+    const sunActivation = safeGetGate(sunLong, 'Sun');
+    activations.Sun = {
+      longitude: sunLong,
+      gate: sunActivation.gate,
+      line: sunActivation.line,
+      sign: sunActivation.sign
+    };
 
-  // Calculate Earth (180° from Sun)
-  let earthLong = sunLong + 180;
-  if (earthLong >= 360) earthLong -= 360;
-  const earthActivation = longitudeToGate(earthLong);
-  activations.Earth = {
-    longitude: earthLong,
-    gate: earthActivation.gate,
-    line: earthActivation.line,
-    sign: earthActivation.sign
-  };
+    // Calculate Earth (180° from Sun)
+    let earthLong = sunLong + 180;
+    if (earthLong >= 360) earthLong -= 360;
+    const earthActivation = safeGetGate(earthLong, 'Earth');
+    activations.Earth = {
+      longitude: earthLong,
+      gate: earthActivation.gate,
+      line: earthActivation.line,
+      sign: earthActivation.sign
+    };
 
-  // Calculate North Node (Rahu)
-  const rahuLong = await calculatePlanetPosition(julianDay, PLANETS.TRUE_NODE);
-  const rahuActivation = longitudeToGate(rahuLong);
-  activations.Rahu = {
-    longitude: rahuLong,
-    gate: rahuActivation.gate,
-    line: rahuActivation.line,
-    sign: rahuActivation.sign
-  };
+    // Calculate North Node (Rahu)
+    const rahuLong = await calculatePlanetPosition(julianDay, PLANETS.TRUE_NODE);
+    const rahuActivation = safeGetGate(rahuLong, 'Rahu');
+    activations.Rahu = {
+      longitude: rahuLong,
+      gate: rahuActivation.gate,
+      line: rahuActivation.line,
+      sign: rahuActivation.sign
+    };
 
-  // Calculate South Node (Ketu - 180° from Rahu)
-  let ketuLong = rahuLong + 180;
-  if (ketuLong >= 360) ketuLong -= 360;
-  const ketuActivation = longitudeToGate(ketuLong);
-  activations.Ketu = {
-    longitude: ketuLong,
-    gate: ketuActivation.gate,
-    line: ketuActivation.line,
-    sign: ketuActivation.sign
-  };
+    // Calculate South Node (Ketu - 180° from Rahu)
+    let ketuLong = rahuLong + 180;
+    if (ketuLong >= 360) ketuLong -= 360;
+    const ketuActivation = safeGetGate(ketuLong, 'Ketu');
+    activations.Ketu = {
+      longitude: ketuLong,
+      gate: ketuActivation.gate,
+      line: ketuActivation.line,
+      sign: ketuActivation.sign
+    };
 
-  // Calculate Moon
-  const moonLong = await calculatePlanetPosition(julianDay, PLANETS.MOON);
-  const moonActivation = longitudeToGate(moonLong);
-  activations.Moon = {
-    longitude: moonLong,
-    gate: moonActivation.gate,
-    line: moonActivation.line,
-    sign: moonActivation.sign
-  };
+    // Calculate Moon
+    const moonLong = await calculatePlanetPosition(julianDay, PLANETS.MOON);
+    const moonActivation = safeGetGate(moonLong, 'Moon');
+    activations.Moon = {
+      longitude: moonLong,
+      gate: moonActivation.gate,
+      line: moonActivation.line,
+      sign: moonActivation.sign
+    };
 
-  // Calculate Mercury
-  const mercuryLong = await calculatePlanetPosition(julianDay, PLANETS.MERCURY);
-  const mercuryActivation = longitudeToGate(mercuryLong);
-  activations.Mercury = {
-    longitude: mercuryLong,
-    gate: mercuryActivation.gate,
-    line: mercuryActivation.line,
-    sign: mercuryActivation.sign
-  };
+    // Calculate Mercury
+    const mercuryLong = await calculatePlanetPosition(julianDay, PLANETS.MERCURY);
+    const mercuryActivation = safeGetGate(mercuryLong, 'Mercury');
+    activations.Mercury = {
+      longitude: mercuryLong,
+      gate: mercuryActivation.gate,
+      line: mercuryActivation.line,
+      sign: mercuryActivation.sign
+    };
 
-  // Calculate Venus (Note: Mars comes before Venus in HD)
-  const venusLong = await calculatePlanetPosition(julianDay, PLANETS.VENUS);
-  const venusActivation = longitudeToGate(venusLong);
-  activations.Venus = {
-    longitude: venusLong,
-    gate: venusActivation.gate,
-    line: venusActivation.line,
-    sign: venusActivation.sign
-  };
+    // Calculate Venus (Note: Mars comes before Venus in HD)
+    const venusLong = await calculatePlanetPosition(julianDay, PLANETS.VENUS);
+    const venusActivation = safeGetGate(venusLong, 'Venus');
+    activations.Venus = {
+      longitude: venusLong,
+      gate: venusActivation.gate,
+      line: venusActivation.line,
+      sign: venusActivation.sign
+    };
 
-  // Calculate Mars
-  const marsLong = await calculatePlanetPosition(julianDay, PLANETS.MARS);
-  const marsActivation = longitudeToGate(marsLong);
-  activations.Mars = {
-    longitude: marsLong,
-    gate: marsActivation.gate,
-    line: marsActivation.line,
-    sign: marsActivation.sign
-  };
+    // Calculate Mars
+    const marsLong = await calculatePlanetPosition(julianDay, PLANETS.MARS);
+    const marsActivation = safeGetGate(marsLong, 'Mars');
+    activations.Mars = {
+      longitude: marsLong,
+      gate: marsActivation.gate,
+      line: marsActivation.line,
+      sign: marsActivation.sign
+    };
 
-  // Calculate Jupiter
-  const jupiterLong = await calculatePlanetPosition(julianDay, PLANETS.JUPITER);
-  const jupiterActivation = longitudeToGate(jupiterLong);
-  activations.Jupiter = {
-    longitude: jupiterLong,
-    gate: jupiterActivation.gate,
-    line: jupiterActivation.line,
-    sign: jupiterActivation.sign
-  };
+    // Calculate Jupiter
+    const jupiterLong = await calculatePlanetPosition(julianDay, PLANETS.JUPITER);
+    const jupiterActivation = safeGetGate(jupiterLong, 'Jupiter');
+    activations.Jupiter = {
+      longitude: jupiterLong,
+      gate: jupiterActivation.gate,
+      line: jupiterActivation.line,
+      sign: jupiterActivation.sign
+    };
 
-  // Calculate Saturn
-  const saturnLong = await calculatePlanetPosition(julianDay, PLANETS.SATURN);
-  const saturnActivation = longitudeToGate(saturnLong);
-  activations.Saturn = {
-    longitude: saturnLong,
-    gate: saturnActivation.gate,
-    line: saturnActivation.line,
-    sign: saturnActivation.sign
-  };
+    // Calculate Saturn
+    const saturnLong = await calculatePlanetPosition(julianDay, PLANETS.SATURN);
+    const saturnActivation = safeGetGate(saturnLong, 'Saturn');
+    activations.Saturn = {
+      longitude: saturnLong,
+      gate: saturnActivation.gate,
+      line: saturnActivation.line,
+      sign: saturnActivation.sign
+    };
 
-  // Calculate Uranus
-  const uranusLong = await calculatePlanetPosition(julianDay, PLANETS.URANUS);
-  const uranusActivation = longitudeToGate(uranusLong);
-  activations.Uranus = {
-    longitude: uranusLong,
-    gate: uranusActivation.gate,
-    line: uranusActivation.line,
-    sign: uranusActivation.sign
-  };
+    // Calculate Uranus
+    const uranusLong = await calculatePlanetPosition(julianDay, PLANETS.URANUS);
+    const uranusActivation = safeGetGate(uranusLong, 'Uranus');
+    activations.Uranus = {
+      longitude: uranusLong,
+      gate: uranusActivation.gate,
+      line: uranusActivation.line,
+      sign: uranusActivation.sign
+    };
 
-  // Calculate Neptune
-  const neptuneLong = await calculatePlanetPosition(julianDay, PLANETS.NEPTUNE);
-  const neptuneActivation = longitudeToGate(neptuneLong);
-  activations.Neptune = {
-    longitude: neptuneLong,
-    gate: neptuneActivation.gate,
-    line: neptuneActivation.line,
-    sign: neptuneActivation.sign
-  };
+    // Calculate Neptune
+    const neptuneLong = await calculatePlanetPosition(julianDay, PLANETS.NEPTUNE);
+    const neptuneActivation = safeGetGate(neptuneLong, 'Neptune');
+    activations.Neptune = {
+      longitude: neptuneLong,
+      gate: neptuneActivation.gate,
+      line: neptuneActivation.line,
+      sign: neptuneActivation.sign
+    };
 
-  // Calculate Pluto
-  const plutoLong = await calculatePlanetPosition(julianDay, PLANETS.PLUTO);
-  const plutoActivation = longitudeToGate(plutoLong);
-  activations.Pluto = {
-    longitude: plutoLong,
-    gate: plutoActivation.gate,
-    line: plutoActivation.line,
-    sign: plutoActivation.sign
-  };
+    // Calculate Pluto
+    const plutoLong = await calculatePlanetPosition(julianDay, PLANETS.PLUTO);
+    const plutoActivation = safeGetGate(plutoLong, 'Pluto');
+    activations.Pluto = {
+      longitude: plutoLong,
+      gate: plutoActivation.gate,
+      line: plutoActivation.line,
+      sign: plutoActivation.sign
+    };
 
-  return activations;
+    return activations;
+  } catch (error) {
+    throw new Error(`Planet calculation failed: ${error.message}`);
+  }
 }
 
 /**
