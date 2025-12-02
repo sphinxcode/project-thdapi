@@ -119,15 +119,45 @@ function longitudeToGate(longitude) {
   // Get degree within sign (0-30)
   const degreeInSign = normalizedLon % 30;
 
-  // Find matching gate
+  // Find matching gate (use <= for end boundary to catch edge cases)
   const gateData = GATE_MAPPING.find(g =>
     g.signNum === signNum &&
     degreeInSign >= g.start &&
-    degreeInSign < g.end
+    degreeInSign <= g.end
   );
 
   if (!gateData) {
-    console.error(`No gate found for ${normalizedLon}° (${degreeInSign}° ${signNum})`);
+    console.error(`No gate found for ${normalizedLon}° (${degreeInSign}° in sign ${signNum})`);
+    // Fallback: find closest gate in the sign
+    const signGates = GATE_MAPPING.filter(g => g.signNum === signNum);
+    const closestGate = signGates.reduce((closest, current) => {
+      const currentDist = Math.min(
+        Math.abs(degreeInSign - current.start),
+        Math.abs(degreeInSign - current.end)
+      );
+      const closestDist = Math.min(
+        Math.abs(degreeInSign - closest.start),
+        Math.abs(degreeInSign - closest.end)
+      );
+      return currentDist < closestDist ? current : closest;
+    });
+
+    if (closestGate) {
+      console.warn(`Using closest gate ${closestGate.gate} for ${normalizedLon}°`);
+      const degreeInGate = degreeInSign - closestGate.start;
+      const gateSpan = closestGate.end - closestGate.start;
+      const line = Math.min(Math.max(Math.floor((degreeInGate / gateSpan) * 6) + 1, 1), 6);
+
+      return {
+        gate: closestGate.gate,
+        line: line,
+        sign: closestGate.sign,
+        signNum: closestGate.signNum,
+        degreeInSign: degreeInSign,
+        absoluteLongitude: normalizedLon
+      };
+    }
+
     return null;
   }
 
