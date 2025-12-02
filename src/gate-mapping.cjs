@@ -130,6 +130,12 @@ function longitudeToGate(longitude) {
     console.error(`No gate found for ${normalizedLon}° (${degreeInSign}° in sign ${signNum})`);
     // Fallback: find closest gate in the sign
     const signGates = GATE_MAPPING.filter(g => g.signNum === signNum);
+
+    if (signGates.length === 0) {
+      console.error(`No gates found for sign ${signNum}`);
+      return null;
+    }
+
     const closestGate = signGates.reduce((closest, current) => {
       const currentDist = Math.min(
         Math.abs(degreeInSign - current.start),
@@ -140,7 +146,7 @@ function longitudeToGate(longitude) {
         Math.abs(degreeInSign - closest.end)
       );
       return currentDist < closestDist ? current : closest;
-    });
+    }, signGates[0]);
 
     if (closestGate) {
       console.warn(`Using closest gate ${closestGate.gate} for ${normalizedLon}°`);
