@@ -301,12 +301,16 @@ async function calculateHumanDesign(params) {
     // Find channels (harmonic gate pairs)
     const channels = [];
     allGates.forEach(gate => {
-      const harmonicGate = HARMONIC_GATES[gate];
-      if (harmonicGate && allGates.has(harmonicGate)) {
-        const channel = [Math.min(gate, harmonicGate), Math.max(gate, harmonicGate)].join('-');
-        if (!channels.includes(channel)) {
-          channels.push(channel);
-        }
+      const harmonicGates = HARMONIC_GATES[gate];
+      if (harmonicGates && Array.isArray(harmonicGates)) {
+        harmonicGates.forEach(harmonicGate => {
+          if (allGates.has(harmonicGate)) {
+            const channel = [Math.min(gate, harmonicGate), Math.max(gate, harmonicGate)].join('-');
+            if (!channels.includes(channel)) {
+              channels.push(channel);
+            }
+          }
+        });
       }
     });
 
@@ -321,7 +325,7 @@ async function calculateHumanDesign(params) {
     // Determine Type
     let type = 'Reflector';
     const hasSacral = definedCenters.has('Sacral');
-    const hasMotor = definedCenters.has('Root') || definedCenters.has('Solar Plexus') || definedCenters.has('Heart');
+    const hasMotor = definedCenters.has('Root') || definedCenters.has('SolarPlexus') || definedCenters.has('Ego');
     const hasThroat = definedCenters.has('Throat');
 
     if (hasSacral && hasThroat) {
@@ -336,15 +340,15 @@ async function calculateHumanDesign(params) {
 
     // Determine Authority
     let authority = 'Lunar (wait 28 days)';
-    if (definedCenters.has('Solar Plexus')) {
+    if (definedCenters.has('SolarPlexus')) {
       authority = 'Emotional';
     } else if (hasSacral) {
       authority = 'Sacral';
     } else if (definedCenters.has('Spleen')) {
       authority = 'Splenic';
-    } else if (definedCenters.has('Heart')) {
+    } else if (definedCenters.has('Ego')) {
       authority = 'Ego';
-    } else if (definedCenters.has('G Center')) {
+    } else if (definedCenters.has('G')) {
       authority = 'Self-Projected';
     }
 
