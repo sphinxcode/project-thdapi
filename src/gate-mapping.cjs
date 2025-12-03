@@ -108,75 +108,56 @@ const GATE_MAPPING = [
 /**
  * Convert absolute longitude (0-360°) to gate number
  */
+// Gate order starting from 0° Aries (Gate 41)
+// This matches hdkit's Gates.order array
+const GATE_ORDER = [
+  41, 19, 13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3,
+  27, 24, 2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56,
+  31, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50,
+  28, 44, 1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60
+];
+
+// Zodiac sign names for reference
+const SIGN_NAMES = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+];
+
+/**
+ * Convert longitude to gate/line using hdkit's 384-line formula
+ * Based on hdkit's getActivationFromDegrees function
+ *
+ * Formula:
+ * - 360° wheel divided into 384 lines (64 gates × 6 lines)
+ * - Each line = 0.9375° (360 / 384)
+ * - Each gate = 5.625° (6 lines × 0.9375)
+ * - percentageThrough = degrees / 360
+ * - gateIndex = floor(percentageThrough * 64)
+ * - line = (floor(percentageThrough * 384) % 6) + 1
+ */
 function longitudeToGate(longitude) {
   // Normalize to 0-360
   let normalizedLon = longitude % 360;
   if (normalizedLon < 0) normalizedLon += 360;
 
-  // Determine zodiac sign (0-11 for Aries-Pisces)
-  const signNum = Math.floor(normalizedLon / 30) + 1;
+  // Calculate percentage through the wheel
+  const percentageThrough = normalizedLon / 360;
 
-  // Get degree within sign (0-30)
+  // Get gate index (0-63) and line (1-6)
+  const gateIndex = Math.floor(percentageThrough * 64);
+  const gate = GATE_ORDER[gateIndex];
+  const line = (Math.floor(percentageThrough * 384) % 6) + 1;
+
+  // Determine zodiac sign
+  const signNum = Math.floor(normalizedLon / 30);
+  const sign = SIGN_NAMES[signNum];
   const degreeInSign = normalizedLon % 30;
 
-  // Find matching gate (use <= for end boundary to catch edge cases)
-  const gateData = GATE_MAPPING.find(g =>
-    g.signNum === signNum &&
-    degreeInSign >= g.start &&
-    degreeInSign <= g.end
-  );
-
-  if (!gateData) {
-    console.error(`No gate found for ${normalizedLon}° (${degreeInSign}° in sign ${signNum})`);
-    // Fallback: find closest gate in the sign
-    const signGates = GATE_MAPPING.filter(g => g.signNum === signNum);
-
-    if (signGates.length === 0) {
-      console.error(`No gates found for sign ${signNum}`);
-      return null;
-    }
-
-    const closestGate = signGates.reduce((closest, current) => {
-      const currentDist = Math.min(
-        Math.abs(degreeInSign - current.start),
-        Math.abs(degreeInSign - current.end)
-      );
-      const closestDist = Math.min(
-        Math.abs(degreeInSign - closest.start),
-        Math.abs(degreeInSign - closest.end)
-      );
-      return currentDist < closestDist ? current : closest;
-    }, signGates[0]);
-
-    if (closestGate) {
-      console.warn(`Using closest gate ${closestGate.gate} for ${normalizedLon}°`);
-      const degreeInGate = degreeInSign - closestGate.start;
-      const gateSpan = closestGate.end - closestGate.start;
-      const line = Math.min(Math.max(Math.floor((degreeInGate / gateSpan) * 6) + 1, 1), 6);
-
-      return {
-        gate: closestGate.gate,
-        line: line,
-        sign: closestGate.sign,
-        signNum: closestGate.signNum,
-        degreeInSign: degreeInSign,
-        absoluteLongitude: normalizedLon
-      };
-    }
-
-    return null;
-  }
-
-  // Calculate line (1-6 within each gate)
-  const degreeInGate = degreeInSign - gateData.start;
-  const gateSpan = gateData.end - gateData.start;
-  const line = Math.min(Math.floor((degreeInGate / gateSpan) * 6) + 1, 6);
-
   return {
-    gate: gateData.gate,
+    gate: gate,
     line: line,
-    sign: gateData.sign,
-    signNum: gateData.signNum,
+    sign: sign,
+    signNum: signNum + 1, // 1-based for compatibility
     degreeInSign: degreeInSign,
     absoluteLongitude: normalizedLon
   };

@@ -327,68 +327,108 @@ async function calculateHumanDesign(params) {
       }
     });
 
-    // Helper function to check if motor is connected to throat
-    const motorToThroat = () => {
-      const centersArray = Array.from(definedCenters);
-      if (!centersArray.includes('Throat')) return false;
-      if (!centersArray.some(c => ['SolarPlexus', 'Sacral', 'Root', 'Ego'].includes(c))) return false;
+    // Helper function to check if there's a motor-to-throat connection
+    // Based on hdkit's motorToThroat() logic
+    function hasMotorToThroat(channels, centers) {
+      const centersArray = Array.from(centers);
 
-      // Solar Plexus to Throat
+      if (!centersArray.some(c => c === 'Throat') ||
+          !centersArray.some(c => c === 'SolarPlexus' || c === 'Sacral' || c === 'Root' || c === 'Ego')) {
+        return false; // Throat undefined and/or no motor defined
+      }
+
+      // Solar Plexus to Throat (direct)
       if (centersArray.includes('SolarPlexus')) {
-        if (channels.some(ch => ['12-22', '35-36'].includes(ch))) return true;
+        if (channels.some(ch => ch === '12-22' || ch === '35-36')) {
+          return true;
+        }
       }
 
       // Sacral to Throat
       if (centersArray.includes('Sacral')) {
-        if (channels.includes('20-34')) return true;
-        if (channels.some(ch => ['2-14', '5-15', '29-46'].includes(ch))) {
-          if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+        // Direct: 20-34
+        if (channels.includes('20-34')) {
+          return true;
         }
+        // Via G Center: Sacral→G + G→Throat
+        if (channels.some(ch => ch === '2-14' || ch === '5-15' || ch === '29-46')) {
+          if (channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33')) {
+            return true;
+          }
+        }
+        // Via Spleen: Sacral→Spleen + Spleen→Throat
         if (channels.includes('27-50')) {
-          if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+          if (channels.some(ch => ch === '16-48' || ch === '20-57')) {
+            return true;
+          }
+          // Via G Center: Sacral→Spleen→G + G→Throat
           if (channels.includes('10-57')) {
-            if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+            if (channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33')) {
+              return true;
+            }
           }
         }
       }
 
       // Ego to Throat
       if (centersArray.includes('Ego')) {
-        if (channels.includes('21-45')) return true;
+        // Direct: 21-45
+        if (channels.includes('21-45')) {
+          return true;
+        }
+        // Via G Center: Ego→G + G→Throat
         if (channels.includes('25-51')) {
-          if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+          if (channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33')) {
+            return true;
+          }
+          // Via Spleen: Ego→G→Spleen + Spleen→Throat
           if (channels.includes('10-57')) {
-            if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+            if (channels.some(ch => ch === '16-48' || ch === '20-57')) {
+              return true;
+            }
           }
         }
+        // Via Spleen: Ego→Spleen + Spleen→Throat
         if (channels.includes('26-44')) {
-          if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+          if (channels.some(ch => ch === '16-48' || ch === '20-57')) {
+            return true;
+          }
         }
       }
 
-      // Root to Throat
+      // Root to Throat (via Spleen)
       if (centersArray.includes('Root')) {
-        if (channels.some(ch => ['18-58', '28-38', '32-54'].includes(ch))) {
-          if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
-          if (channels.includes('10-57')) {
-            if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+        // Root→Spleen + Spleen→Throat
+        if (channels.some(ch => ch === '18-58' || ch === '28-38' || ch === '32-54')) {
+          if (channels.some(ch => ch === '16-48' || ch === '20-57')) {
+            return true;
+          }
+        }
+        // Root→G + G→Throat (via Spleen connection)
+        if (channels.includes('10-57')) {
+          if (channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33')) {
+            return true;
           }
         }
       }
 
       return false;
-    };
+    }
 
-    // Determine Type (matching hdkit logic)
+    // Determine Type
     let type = 'Reflector';
     const hasSacral = definedCenters.has('Sacral');
-    const hasMotorToThroat = motorToThroat();
+    const hasMotor = definedCenters.has('Root') || definedCenters.has('SolarPlexus') || definedCenters.has('Ego');
+    const hasThroat = definedCenters.has('Throat');
+    const motorToThroat = hasMotorToThroat(channels, definedCenters);
 
-    if (hasSacral) {
-      type = hasMotorToThroat ? 'Manifesting Generator' : 'Generator';
-    } else if (hasMotorToThroat) {
+    if (hasSacral && motorToThroat) {
+      type = 'Manifesting Generator';
+    } else if (hasSacral) {
+      type = 'Generator';
+    } else if (hasMotor && hasThroat) {
       type = 'Manifestor';
-    } else if (definedCenters.size > 0) {
+    } else if (definedCenters.size > 0 && !hasSacral) {
       type = 'Projector';
     }
 
