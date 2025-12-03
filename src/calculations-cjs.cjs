@@ -327,19 +327,68 @@ async function calculateHumanDesign(params) {
       }
     });
 
-    // Determine Type
+    // Helper function to check if motor is connected to throat
+    const motorToThroat = () => {
+      const centersArray = Array.from(definedCenters);
+      if (!centersArray.includes('Throat')) return false;
+      if (!centersArray.some(c => ['SolarPlexus', 'Sacral', 'Root', 'Ego'].includes(c))) return false;
+
+      // Solar Plexus to Throat
+      if (centersArray.includes('SolarPlexus')) {
+        if (channels.some(ch => ['12-22', '35-36'].includes(ch))) return true;
+      }
+
+      // Sacral to Throat
+      if (centersArray.includes('Sacral')) {
+        if (channels.includes('20-34')) return true;
+        if (channels.some(ch => ['2-14', '5-15', '29-46'].includes(ch))) {
+          if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+        }
+        if (channels.includes('27-50')) {
+          if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+          if (channels.includes('10-57')) {
+            if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+          }
+        }
+      }
+
+      // Ego to Throat
+      if (centersArray.includes('Ego')) {
+        if (channels.includes('21-45')) return true;
+        if (channels.includes('25-51')) {
+          if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+          if (channels.includes('10-57')) {
+            if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+          }
+        }
+        if (channels.includes('26-44')) {
+          if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+        }
+      }
+
+      // Root to Throat
+      if (centersArray.includes('Root')) {
+        if (channels.some(ch => ['18-58', '28-38', '32-54'].includes(ch))) {
+          if (channels.some(ch => ['16-48', '20-57'].includes(ch))) return true;
+          if (channels.includes('10-57')) {
+            if (channels.some(ch => ['1-8', '7-31', '10-20', '13-33'].includes(ch))) return true;
+          }
+        }
+      }
+
+      return false;
+    };
+
+    // Determine Type (matching hdkit logic)
     let type = 'Reflector';
     const hasSacral = definedCenters.has('Sacral');
-    const hasMotor = definedCenters.has('Root') || definedCenters.has('SolarPlexus') || definedCenters.has('Ego');
-    const hasThroat = definedCenters.has('Throat');
+    const hasMotorToThroat = motorToThroat();
 
-    if (hasSacral && hasThroat) {
-      type = 'Manifesting Generator';
-    } else if (hasSacral) {
-      type = 'Generator';
-    } else if (hasMotor && hasThroat) {
+    if (hasSacral) {
+      type = hasMotorToThroat ? 'Manifesting Generator' : 'Generator';
+    } else if (hasMotorToThroat) {
       type = 'Manifestor';
-    } else if (definedCenters.size > 0 && !hasSacral) {
+    } else if (definedCenters.size > 0) {
       type = 'Projector';
     }
 
