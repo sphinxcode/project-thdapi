@@ -150,9 +150,9 @@ const PHS_MAPPINGS = {
 };
 
 /**
- * Environmental Tone mappings based on Tone
+ * Tone mappings based on Tone (applies to both PHS and Rave Psychology)
  */
-const ENVIRONMENTAL_TONES = {
+const TONES = {
   1: 'Smell',
   2: 'Taste',
   3: 'Outer Vision',
@@ -554,6 +554,9 @@ async function calculateHumanDesign(params) {
     const digestionType = PHS_MAPPINGS.digestionType[designSunColorSide][design.Sun.color];
     const digestion = `${digestionType} ${digestionBase}`;
 
+    // Digestion Tone is based on Design Sun Tone
+    const digestionTone = TONES[design.Sun.tone];
+
     // Environment is based on Design Ketu (South Node) Color
     const designKetuColorSide = design.Ketu.tone < 4 ? 'left' : 'right';
     const environmentBase = PHS_MAPPINGS.environment[design.Ketu.color];
@@ -561,14 +564,20 @@ async function calculateHumanDesign(params) {
     const environment = `${environmentType} ${environmentBase}`;
 
     // Environmental Tone is based on Design Ketu (South Node) Tone
-    const environmentalTone = ENVIRONMENTAL_TONES[design.Ketu.tone];
+    const environmentalTone = TONES[design.Ketu.tone];
 
     // Calculate Rave Psychology
     // Motivation is based on Personality Sun Color
     const motivation = PHS_MAPPINGS.motivation[personality.Sun.color];
 
+    // Motivation Tone is based on Personality Sun Tone
+    const motivationTone = TONES[personality.Sun.tone];
+
     // Perspective is based on Personality Rahu (North Node) Color
     const perspective = PHS_MAPPINGS.perspective[personality.Rahu.color];
+
+    // Perspective Tone is based on Personality Rahu (North Node) Tone
+    const perspectiveTone = TONES[personality.Rahu.tone];
 
     return {
       birthInfo: {
@@ -584,12 +593,15 @@ async function calculateHumanDesign(params) {
       variableType,
       phs: {
         digestion,
+        digestionTone,
         environment,
         environmentalTone
       },
       ravePsychology: {
         motivation,
-        perspective
+        motivationTone,
+        perspective,
+        perspectiveTone
       },
       personality,
       design,
