@@ -140,8 +140,14 @@ function longitudeToGate(longitude) {
   let normalizedLon = longitude % 360;
   if (normalizedLon < 0) normalizedLon += 360;
 
+  // Human Design gates start at Gate 41 at 2° Aquarius
+  // Distance from 0° Aries to Gate 41 start = 302°
+  // Adjustment: add 58° (360° - 302°) to convert tropical to HD degrees
+  let hdDegrees = normalizedLon + 58;
+  if (hdDegrees >= 360) hdDegrees -= 360;
+
   // Calculate percentage through the wheel
-  const percentageThrough = normalizedLon / 360;
+  const percentageThrough = hdDegrees / 360;
 
   // Get gate index (0-63) and line (1-6)
   const gateIndex = Math.floor(percentageThrough * 64);
