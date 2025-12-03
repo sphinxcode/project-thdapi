@@ -47,49 +47,49 @@ function calculatePlanetPosition(julianDay, planet) {
 
 /**
  * Find Design date (when Sun was 88 degrees before current position)
- * Uses forward linear search from hdkit TypeScript implementation
+ * Uses binary search algorithm from hdkit Ruby implementation
  */
 async function findDesignDate(personalitySunLongitude, birthJulianDay) {
-  // Start 92 days before birth (7.949e+9 milliseconds = ~92 days)
-  // 1 day in Julian Day = 1.0, so 92 days = 92.0
-  let searchJD = birthJulianDay - 92;
-  let offset;
+  // Binary search between 96 and 84 days before birth
+  let startJD = birthJulianDay - 96;
+  let endJD = birthJulianDay - 84;
+  let maxIterations = 100;
+  let designJD = null;
 
-  if (personalitySunLongitude > 87) {
-    // Normal case: Personality sun >= 88°
-    offset = 89;
-    let maxIterations = 100000; // Safety limit
+  while (designJD === null && maxIterations > 0) {
+    const midJD = (startJD + endJD) / 2;
+    const midSunLong = await calculatePlanetPosition(midJD, PLANETS.SUN);
 
-    while (offset > 88 && maxIterations > 0) {
-      const searchSunLong = await calculatePlanetPosition(searchJD, PLANETS.SUN);
-      offset = Math.abs(personalitySunLongitude - searchSunLong);
+    // Calculate the retrograde offset (Personality - Design)
+    // Design Sun should be BEHIND Personality Sun by 88 degrees
+    let offset = personalitySunLongitude - midSunLong;
 
-      if (offset > 88) {
-        // Move forward by ~10 seconds (10000 ms = 0.0001157 days)
-        searchJD += 0.0001157;
-      }
+    // Handle wrap-around: if offset is negative, add 360
+    if (offset < 0) offset += 360;
 
-      maxIterations--;
+    // We want offset to be exactly 88 degrees
+    // offset > 88 means Design Sun is too far back, need to search later (closer to birth)
+    // offset < 88 means Design Sun is too close, need to search earlier (further from birth)
+
+    // Check if we found it (within tolerance)
+    if (offset < 88.00001 && offset > 87.99999) {
+      designJD = midJD;
+    } else if (offset > 88) {
+      // Design Sun is too far back, search later dates (move start forward)
+      startJD = midJD;
+    } else {
+      // Design Sun is too close, search earlier dates (move end backward)
+      endJD = midJD;
     }
-  } else {
-    // Edge case: Personality sun < 88° (wraps around)
-    offset = 271;
-    let maxIterations = 100000; // Safety limit
 
-    while (offset < 272 && maxIterations > 0) {
-      const searchSunLong = await calculatePlanetPosition(searchJD, PLANETS.SUN);
-      offset = Math.abs(personalitySunLongitude - searchSunLong);
-
-      if (offset < 272) {
-        // Move forward by ~10 seconds
-        searchJD += 0.0001157;
-      }
-
-      maxIterations--;
-    }
+    maxIterations--;
   }
 
-  return searchJD;
+  if (designJD === null) {
+    throw new Error('Could not find Design date within 100 iterations');
+  }
+
+  return designJD;
 }
 
 /**
