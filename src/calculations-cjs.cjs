@@ -425,23 +425,24 @@ function getHouseNumber(longitude, houseCusps) {
   let lon = longitude % 360;
   if (lon < 0) lon += 360;
 
-  // Check each house - a planet is in house N if it's between cusp N and cusp N+1
-  for (let i = 1; i <= 12; i++) {
+  // Check each house - houseCusps array is 0-indexed (house 1 = index 0)
+  for (let i = 0; i < 12; i++) {
+    const houseNumber = i + 1; // House 1-12
     const currentCusp = houseCusps[i];
-    const nextCusp = i === 12 ? houseCusps[1] : houseCusps[i + 1];
+    const nextCusp = i === 11 ? houseCusps[0] : houseCusps[i + 1];
 
     // Handle wrap-around at 0/360 degrees
     if (currentCusp < nextCusp) {
       // Normal case: house doesn't cross 0°
       // Planet is in house N if: cusp[N] <= longitude < cusp[N+1]
       if (lon >= currentCusp && lon < nextCusp) {
-        return i;
+        return houseNumber;
       }
     } else {
       // Wrap-around case: house crosses 0°
       // Planet is in house N if: longitude >= cusp[N] OR longitude < cusp[N+1]
       if (lon >= currentCusp || lon < nextCusp) {
-        return i;
+        return houseNumber;
       }
     }
   }
