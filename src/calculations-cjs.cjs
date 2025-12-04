@@ -418,13 +418,14 @@ async function calculateHousesAndAscendant(julianDay, latitude, longitude) {
 
 /**
  * Determine which house a given longitude falls into
+ * A planet is IN a house if it's past the cusp and before the next cusp
  */
 function getHouseNumber(longitude, houseCusps) {
   // Normalize longitude to 0-360
   let lon = longitude % 360;
   if (lon < 0) lon += 360;
 
-  // Check each house
+  // Check each house - a planet is in house N if it's between cusp N and cusp N+1
   for (let i = 1; i <= 12; i++) {
     const currentCusp = houseCusps[i];
     const nextCusp = i === 12 ? houseCusps[1] : houseCusps[i + 1];
@@ -432,18 +433,20 @@ function getHouseNumber(longitude, houseCusps) {
     // Handle wrap-around at 0/360 degrees
     if (currentCusp < nextCusp) {
       // Normal case: house doesn't cross 0°
-      if (lon >= currentCusp && lon < nextCusp) {
+      // Planet is in this house if: currentCusp < longitude < nextCusp
+      if (lon > currentCusp && lon <= nextCusp) {
         return i;
       }
     } else {
       // Wrap-around case: house crosses 0°
-      if (lon >= currentCusp || lon < nextCusp) {
+      // Planet is in this house if: longitude > currentCusp OR longitude <= nextCusp
+      if (lon > currentCusp || lon <= nextCusp) {
         return i;
       }
     }
   }
 
-  // Fallback (should never happen)
+  // Fallback: if exactly on a cusp, assign to the house it's entering
   return 1;
 }
 
@@ -471,23 +474,13 @@ function calculatePartOfFortune(ascendant, sunLong, moonLong, isDayBirth) {
 
 /**
  * Determine if birth is during day or night
- * Day = Sun above horizon (Sun's altitude > 0)
+ * Day birth = Sun in houses 7-12 (above the horizon)
+ * Night birth = Sun in houses 1-6 (below the horizon)
  */
-async function isDayBirth(julianDay, latitude, longitude) {
-  return new Promise((resolve, reject) => {
-    // Calculate Sun's position including altitude
-    swisseph.swe_calc_ut(julianDay, PLANETS.SUN, swisseph.SEFLG_MOSEPH | swisseph.SEFLG_EQUATORIAL, (result) => {
-      if (result.error) {
-        reject(new Error(result.error));
-      } else {
-        // Get Sun's altitude using azalt
-        swisseph.swe_azalt(julianDay, swisseph.SE_EQU2HOR, [longitude, latitude, 0], 0, 0, [result.longitude, result.latitude], (azalt) => {
-          // azalt.altitude > 0 means Sun is above horizon (day)
-          resolve(azalt.trueAltitude > 0);
-        });
-      }
-    });
-  });
+function isDayBirth(sunHouse) {
+  // Traditional astrology: Day = Sun in houses 7-12 (above ASC-DSC axis)
+  // Night = Sun in houses 1-6 (below ASC-DSC axis)
+  return sunHouse >= 7 && sunHouse <= 12;
 }
 
 /**
@@ -826,8 +819,8 @@ async function calculateHumanDesign(params) {
         description: 'Rising sign - the mask you wear, how others see you'
       }, houseCusps);
 
-      // Determine if day or night birth
-      const isDay = await isDayBirth(julianDay, locationInfo.lat, locationInfo.lon);
+      // Determine if day or night birth based on Sun's house
+      const isDay = isDayBirth(personality.Sun.house);
 
       // Calculate Part of Fortune (both formulas)
       const pofDayNight = calculatePartOfFortune(ascendantLong, personality.Sun.longitude, personality.Moon.longitude, isDay);
