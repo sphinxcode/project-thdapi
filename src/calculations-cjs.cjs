@@ -433,14 +433,14 @@ function getHouseNumber(longitude, houseCusps) {
     // Handle wrap-around at 0/360 degrees
     if (currentCusp < nextCusp) {
       // Normal case: house doesn't cross 0°
-      // Planet is in this house if: currentCusp < longitude < nextCusp
-      if (lon > currentCusp && lon <= nextCusp) {
+      // Planet is in house N if: cusp[N] <= longitude < cusp[N+1]
+      if (lon >= currentCusp && lon < nextCusp) {
         return i;
       }
     } else {
       // Wrap-around case: house crosses 0°
-      // Planet is in this house if: longitude > currentCusp OR longitude <= nextCusp
-      if (lon > currentCusp || lon <= nextCusp) {
+      // Planet is in house N if: longitude >= cusp[N] OR longitude < cusp[N+1]
+      if (lon >= currentCusp || lon < nextCusp) {
         return i;
       }
     }
