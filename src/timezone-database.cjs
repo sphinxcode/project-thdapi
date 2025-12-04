@@ -32,7 +32,7 @@ const TIMEZONE_DB = {
   'Europe/Brussels': { offset: 1, lat: 50.8503, lon: 4.3517, cities: ['Брюссель', 'Brussels'] },
   'Europe/Vienna': { offset: 1, lat: 48.2082, lon: 16.3738, cities: ['Вена', 'Vienna'] },
   'Europe/Athens': { offset: 2, lat: 37.9838, lon: 23.7275, cities: ['Афины', 'Athens'] },
-  'Europe/Istanbul': { offset: 3, lat: 41.0082, lon: 28.9784, cities: ['Стамбул', 'Istanbul'] },
+  'Europe/Istanbul': { offset: 3, lat: 41.0082, lon: 28.9784, cities: ['Стамбул', 'Istanbul', 'Ankara', 'Анкара', 'Turkey', 'Турция', 'Izmir', 'Izmit', 'Bursa'] },
   'Europe/Stockholm': { offset: 1, lat: 59.3293, lon: 18.0686, cities: ['Стокгольм', 'Stockholm'] },
   'Europe/Oslo': { offset: 1, lat: 59.9139, lon: 10.7522, cities: ['Осло', 'Oslo'] },
   'Europe/Copenhagen': { offset: 1, lat: 55.6761, lon: 12.5683, cities: ['Копенгаген', 'Copenhagen'] },
@@ -171,15 +171,9 @@ function findTimezoneByCity(cityName) {
     }
   }
   
-  // Не найдено - возвращаем Москву по умолчанию
-  console.warn(`City not found in database: ${cityName}, using Moscow as fallback`);
-  return {
-    timezone: 'Europe/Moscow',
-    offset: 3,
-    latitude: 55.7558,
-    longitude: 37.6173,
-    city: 'Moscow (fallback)'
-  };
+  // Не найдено - возвращаем null чтобы использовать Google Maps API
+  console.log(`City not found in database: ${cityName}, will try Google Maps API`);
+  return null;
 }
 
 /**
@@ -224,11 +218,8 @@ function convertLocalToUTC(birthDate, birthTime, cityName) {
   const locationInfo = findTimezoneByCity(cityName);
   
   if (!locationInfo || !locationInfo.timezone) {
-    // Fallback на Москву
-    locationInfo.timezone = 'Europe/Moscow';
-    locationInfo.offset = 3;
-    locationInfo.latitude = 55.7558;
-    locationInfo.longitude = 37.6173;
+    // Город не найден - выбрасываем ошибку для использования Google Maps API
+    throw new Error(`City not found in static database: ${cityName}`);
   }
   
   // Получить offset с DST
