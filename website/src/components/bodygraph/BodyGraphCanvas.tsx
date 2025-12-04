@@ -167,7 +167,7 @@ export default function BodygraphCanvas({
                 key={`${gates[0]}-${gates[1]}`}
                 d={path}
                 fill="none"
-                stroke={active ? 'url(#channelGradient)' : '#E8DDD4'}
+                stroke={active ? 'url(#channelGradient)' : '#8B7D7D'}
                 strokeWidth={active ? 12 : 6}
                 strokeLinecap="round"
                 strokeDasharray={hasOneGate && !active ? '18 12' : 'none'}
@@ -175,7 +175,7 @@ export default function BodygraphCanvas({
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 1, delay: 0.5 }}
                 filter={active ? 'url(#glow)' : undefined}
-                opacity={active ? 1 : 0.3}
+                opacity={active ? 1 : 0.6}
               />
             );
           })}
@@ -206,16 +206,16 @@ export default function BodygraphCanvas({
                         ? '#1A1A1A'
                         : activation?.type === 'design'
                           ? '#C9A227'
-                          : '#E8DDD4'
+                          : '#D4C4B4'
                   }
-                  stroke={isActive ? '#FFF8F5' : '#999'}
+                  stroke={isActive ? '#FFF8F5' : '#6B5D5D'}
                   strokeWidth={isActive ? 4 : 2}
                   className="cursor-pointer transition-transform hover:scale-110"
                   onMouseEnter={(e) => handleGateHover(gate, e)}
                   onMouseLeave={() => handleGateHover(null)}
                   onClick={() => onGateClick?.(gate)}
                   filter={isActive ? 'url(#shadow)' : undefined}
-                  opacity={isActive ? 1 : 0.6}
+                  opacity={isActive ? 1 : 0.8}
                 />
                 {/* Gate number label */}
                 <text
@@ -223,7 +223,7 @@ export default function BodygraphCanvas({
                   y={pos.y + scaledRadius * 0.25}
                   textAnchor="middle"
                   fontSize={scaledRadius * 0.75}
-                  fill={isActive ? '#FFF' : '#666'}
+                  fill={isActive ? '#FFF' : '#4A3A3A'}
                   fontWeight="700"
                   pointerEvents="none"
                 >

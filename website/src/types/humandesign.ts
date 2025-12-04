@@ -76,6 +76,9 @@ export interface GateActivation {
   name: string;
   iChingName: string;
   description: string;
+  color?: number;
+  tone?: number;
+  base?: number;
 }
 
 export interface BirthData {

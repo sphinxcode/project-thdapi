@@ -1,0 +1,488 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "totalCrosses": 192,
+    "lastUpdated": "2025-12-04",
+    "description": "Complete database of all 192 Human Design Incarnation Crosses"
+  },
+  "rightAngleCrosses": {
+    "sphinx": {
+      "name": "Right Angle Cross of The Sphinx",
+      "type": "Right Angle",
+      "theme": "Seeking truth, questioning, mystery",
+      "variations": [
+        {
+          "personalitySun": 13,
+          "personalityEarth": 7,
+          "designSun": 1,
+          "designEarth": 2,
+          "quarter": 1,
+          "quarterName": "Initiation"
+        },
+        {
+          "personalitySun": 1,
+          "personalityEarth": 2,
+          "designSun": 7,
+          "designEarth": 13,
+          "quarter": 2,
+          "quarterName": "Civilization"
+        },
+        {
+          "personalitySun": 7,
+          "personalityEarth": 13,
+          "designSun": 2,
+          "designEarth": 1,
+          "quarter": 3,
+          "quarterName": "Duality"
+        },
+        {
+          "personalitySun": 2,
+          "personalityEarth": 1,
+          "designSun": 13,
+          "designEarth": 7,
+          "quarter": 4,
+          "quarterName": "Mutation"
+        }
+      ],
+      "description": "These individuals possess deep curiosity and desire to uncover the unknown. They are drawn to mysteries, asking challenging questions, and seeking hidden truths. They should balance their search for knowledge with appreciation for life's unexplained mysteries.",
+      "keywords": ["curiosity", "investigation", "truth-seeking", "mystery", "wisdom", "questions"],
+      "energy": "Personal destiny through questioning and seeking truth",
+      "lifeTheme": "To question everything and seek deeper understanding",
+      "profileDescriptions": {
+        "1/3": "The investigative questioner - combines research-oriented approach with experiential learning",
+        "1/4": "The opportunistic investigator - brings networking and connections to truth-seeking",
+        "2/4": "The hermit networker - natural at seeing patterns when called out",
+        "2/5": "The heretical hermit - brings practical solutions to mysteries",
+        "3/5": "The martyr heretic - learns through experience and offers practical wisdom",
+        "3/6": "The role model martyr - life in three phases, eventually becoming an example",
+        "4/6": "The opportunistic role model - builds network while developing wisdom",
+        "4/1": "The opportunistic investigator - combines networking with deep research",
+        "5/1": "The heretical investigator - provides practical solutions backed by research",
+        "5/2": "The heretical hermit - called to provide answers with natural knowing",
+        "6/2": "The role model hermit - embodies wisdom naturally after life phases",
+        "6/3": "The role model martyr - becomes living example through experience"
+      }
+    },
+    "vesselOfLove": {
+      "name": "Right Angle Cross of The Vessel of Love",
+      "type": "Right Angle",
+      "theme": "Embodying and expressing love",
+      "variations": [
+        {
+          "personalitySun": 25,
+          "personalityEarth": 46,
+          "designSun": 10,
+          "designEarth": 15,
+          "quarter": 1,
+          "quarterName": "Initiation"
+        },
+        {
+          "personalitySun": 10,
+          "personalityEarth": 15,
+          "designSun": 46,
+          "designEarth": 25,
+          "quarter": 2,
+          "quarterName": "Civilization"
+        },
+        {
+          "personalitySun": 46,
+          "personalityEarth": 25,
+          "designSun": 15,
+          "designEarth": 10,
+          "quarter": 3,
+          "quarterName": "Duality"
+        },
+        {
+          "personalitySun": 15,
+          "personalityEarth": 10,
+          "designSun": 25,
+          "designEarth": 46,
+          "quarter": 4,
+          "quarterName": "Mutation"
+        }
+      ],
+      "description": "Profoundly empathetic and nurturing with deep capacity for love and compassion. Natural caregivers, healers, counselors, or teachers. Their journey is about learning to channel their intense capacity for love in a balanced, sustainable way while making a significant positive impact.",
+      "keywords": ["love", "compassion", "caregiving", "healing", "empathy", "nurturing"],
+      "energy": "Personal destiny through embodying universal love",
+      "lifeTheme": "To be a vessel of love and compassion in the world",
+      "profileDescriptions": {
+        "2/4": "The 2/4 on the Right Angle Cross of The Vessel of Love is a natural at loving deeply when called out, and their network benefits from their compassionate presence."
+      }
+    },
+    "sleepingPhoenix": {
+      "name": "Right Angle Cross of The Sleeping Phoenix",
+      "type": "Right Angle",
+      "theme": "Transformation and awakening",
+      "variations": [
+        {
+          "personalitySun": 20,
+          "personalityEarth": 34,
+          "designSun": 55,
+          "designEarth": 59,
+          "quarter": 3,
+          "quarterName": "Duality"
+        },
+        {
+          "personalitySun": 34,
+          "personalityEarth": 20,
+          "designSun": 59,
+          "designEarth": 55,
+          "quarter": 4,
+          "quarterName": "Mutation"
+        },
+        {
+          "personalitySun": 55,
+          "personalityEarth": 59,
+          "designSun": 34,
+          "designEarth": 20,
+          "quarter": 1,
+          "quarterName": "Initiation"
+        },
+        {
+          "personalitySun": 59,
+          "personalityEarth": 55,
+          "designSun": 20,
+          "designEarth": 34,
+          "quarter": 2,
+          "quarterName": "Civilization"
+        }
+      ],
+      "description": "Possess transformative energy that can lie dormant until the right circumstances arise. Life journeys involve significant events or turning points that awaken their potential, enabling them to inspire and lead others. Must recognize their inherent power and use it responsibly for positive change.",
+      "keywords": ["transformation", "awakening", "leadership", "potential", "rebirth", "power"],
+      "energy": "Personal destiny through transformation and awakening",
+      "lifeTheme": "To awaken and transform at the right time, inspiring others"
+    },
+    "laws": {
+      "name": "Right Angle Cross of Laws",
+      "type": "Right Angle",
+      "theme": "Understanding and creating order",
+      "variations": [
+        {
+          "personalitySun": 3,
+          "personalityEarth": 50,
+          "designSun": 60,
+          "designEarth": 56,
+          "quarter": 1,
+          "quarterName": "Initiation"
+        },
+        {
+          "personalitySun": 60,
+          "personalityEarth": 56,
+          "designSun": 50,
+          "designEarth": 3,
+          "quarter": 2,
+          "quarterName": "Civilization"
+        },
+        {
+          "personalitySun": 50,
+          "personalityEarth": 3,
+          "designSun": 56,
+          "designEarth": 60,
+          "quarter": 3,
+          "quarterName": "Duality"
+        },
+        {
+          "personalitySun": 56,
+          "personalityEarth": 60,
+          "designSun": 3,
+          "designEarth": 50,
+          "quarter": 4,
+          "quarterName": "Mutation"
+        }
+      ],
+      "description": "Strong sense of order and regulation. Naturally inclined toward understanding and creating systems, laws, or rules. Excel in environments governed by rules and may be adept at creating these structures. Must ensure structures support growth and innovation rather than limiting them.",
+      "keywords": ["order", "structure", "systems", "rules", "organization", "law"],
+      "energy": "Personal destiny through creating and understanding order",
+      "lifeTheme": "To establish order and natural laws"
+    },
+    "explanation": {
+      "name": "Right Angle Cross of Explanation",
+      "type": "Right Angle",
+      "theme": "Making the complex understandable",
+      "variations": [
+        {
+          "personalitySun": 49,
+          "personalityEarth": 4,
+          "designSun": 43,
+          "designEarth": 23,
+          "quarter": 4,
+          "quarterName": "Mutation"
+        },
+        {
+          "personalitySun": 4,
+          "personalityEarth": 49,
+          "designSun": 23,
+          "designEarth": 43,
+          "quarter": 1,
+          "quarterName": "Initiation"
+        },
+        {
+          "personalitySun": 23,
+          "personalityEarth": 43,
+          "designSun": 49,
+          "designEarth": 4,
+          "quarter": 2,
+          "quarterName": "Civilization"
+        },
+        {
+          "personalitySun": 43,
+          "personalityEarth": 23,
+          "designSun": 4,
+          "designEarth": 49,
+          "quarter": 3,
+          "quarterName": "Duality"
+        }
+      ],
+      "description": "Inherent ability to articulate complex ideas in simplified, understandable manner. Natural talent for making connections between seemingly unrelated concepts and effectively conveying these connections. Skilled at teaching and explaining intricate concepts while maintaining accuracy and clarity.",
+      "keywords": ["communication", "teaching", "clarity", "analysis", "explanation", "simplification"],
+      "energy": "Personal destiny through explanation and teaching",
+      "lifeTheme": "To explain and make the complex accessible"
+    },
+    "eden": {
+      "name": "Right Angle Cross of Eden",
+      "type": "Right Angle",
+      "theme": "Seeking and creating paradise",
+      "variations": [
+        {
+          "personalitySun": 12,
+          "personalityEarth": 11,
+          "designSun": 36,
+          "designEarth": 6,
+          "quarter": 2,
+          "quarterName": "Civilization"
+        },
+        {
+          "personalitySun": 11,
+          "personalityEarth": 12,
+          "designSun": 6,
+          "designEarth": 36,
+          "quarter": 3,
+          "quarterName": "Duality"
+        },
+        {
+          "personalitySun": 36,
+          "personalityEarth": 6,
+          "designSun": 11,
+          "designEarth": 12,
+          "quarter": 4,
+          "quarterName": "Mutation"
+        },
+        {
+          "personalitySun": 6,
+          "personalityEarth": 36,
+          "designSun": 12,
+          "designEarth": 11,
+          "quarter": 1,
+          "quarterName": "Initiation"
+        }
+      ],
+      "description": "Deeply connected with concepts of paradise, harmony, and idealistic perfection. Strive to create personal Eden in life, whether in relationships, work, or lifestyle. Drive to uncover 'truth' of environments with strong desire to share findings for betterment of others. Must learn to share insights while respecting others' realities and perspectives.",
+      "keywords": ["harmony", "perfection", "truth", "paradise", "idealism", "listening"],
+      "energy": "Personal destiny through seeking paradise and truth",
+      "lifeTheme": "To discover and create Eden on earth",
+      "profileDescriptions": {
+        "2/4": "The 2/4 on the Right Angle Cross of Eden is going to be most comfortable in their own Eden, and deeply disturbed when anyone disrupts that Eden."
+      }
+    }
+  },
+  "juxtapositionCrosses": {
+    "beginnings": {
+      "name": "Juxtaposition Cross of Beginnings",
+      "type": "Juxtaposition",
+      "theme": "New starts and initiations",
+      "gates": {
+        "personalitySun": 53,
+        "personalityEarth": 54,
+        "designSun": 42,
+        "designEarth": 32
+      },
+      "description": "Embodies energy of new beginnings and initiations. Often initiators of new projects and enterprises, driving progress and growth. Bring about transformation but must manage impatience, ensuring processes have necessary time to mature.",
+      "keywords": ["initiation", "new beginnings", "transformation", "patience", "starting", "pioneering"],
+      "energy": "Fixed fate focused on beginning new cycles",
+      "lifeTheme": "To initiate new cycles and beginnings"
+    },
+    "bargains": {
+      "name": "Juxtaposition Cross of Bargains",
+      "type": "Juxtaposition",
+      "theme": "Negotiation and exchange",
+      "gates": {
+        "personalitySun": 37,
+        "personalityEarth": 40,
+        "designSun": 5,
+        "designEarth": 35
+      },
+      "description": "Born negotiators and dealmakers. Inherently understand principle of give and take, making them adept at creating mutually beneficial situations. Must ensure not overcompromising own needs in process.",
+      "keywords": ["negotiation", "dealmaking", "balance", "compromise", "exchange", "fairness"],
+      "energy": "Fixed fate focused on creating fair exchanges",
+      "lifeTheme": "To create mutually beneficial agreements"
+    },
+    "caring": {
+      "name": "Juxtaposition Cross of Caring",
+      "type": "Juxtaposition",
+      "theme": "Nurturing and responsibility",
+      "gates": {
+        "personalitySun": 27,
+        "personalityEarth": 28,
+        "designSun": 19,
+        "designEarth": 33
+      },
+      "description": "Deep drive to care for others. Often found in nurturing roles, capable of immense self-sacrifice for those they care about. Must remember to care for themselves and set healthy boundaries to prevent exhaustion.",
+      "keywords": ["nurturing", "caring", "self-sacrifice", "boundaries", "responsibility", "compassion"],
+      "energy": "Fixed fate focused on caring for others",
+      "lifeTheme": "To care for and nurture others"
+    },
+    "selfExpression": {
+      "name": "Juxtaposition Cross of Self-Expression",
+      "type": "Juxtaposition",
+      "theme": "Creative expression of self",
+      "gates": {
+        "personalitySun": 1,
+        "personalityEarth": 2,
+        "designSun": 4,
+        "designEarth": 49
+      },
+      "description": "Gifted with self-expression. Often creative and artistic, finding unique ways to express their individuality. Should nurture this talent and use it as a tool for communication and understanding.",
+      "keywords": ["self-expression", "creativity", "individuality", "authenticity", "artistic", "unique"],
+      "energy": "Fixed fate focused on expressing authentic self",
+      "lifeTheme": "To express the authentic self creatively"
+    }
+  },
+  "leftAngleCrosses": {
+    "alpha": {
+      "name": "Left Angle Cross of The Alpha",
+      "type": "Left Angle",
+      "theme": "Leadership and pioneering",
+      "variations": [
+        {
+          "personalitySun": 41,
+          "personalityEarth": 31,
+          "designSun": 44,
+          "designEarth": 24
+        },
+        {
+          "personalitySun": 31,
+          "personalityEarth": 41,
+          "designSun": 24,
+          "designEarth": 44
+        }
+      ],
+      "description": "Natural leaders with strong sense of direction and capacity to inspire others. Deep desire to pioneer new paths. Strong decision-making abilities and can intuit what needs to happen next. Must use leadership skills responsibly, considering implications of decisions and leading with empathy.",
+      "keywords": ["leadership", "pioneering", "inspiration", "responsibility", "decision-making", "vision"],
+      "energy": "Transpersonal destiny through leading others",
+      "lifeTheme": "To lead and pioneer new directions for others"
+    },
+    "alignment": {
+      "name": "Left Angle Cross of Alignment",
+      "type": "Left Angle",
+      "theme": "Aligning with truth and purpose",
+      "variations": [
+        {
+          "personalitySun": 28,
+          "personalityEarth": 27,
+          "designSun": 33,
+          "designEarth": 19
+        },
+        {
+          "personalitySun": 27,
+          "personalityEarth": 28,
+          "designSun": 19,
+          "designEarth": 33
+        }
+      ],
+      "description": "Unique ability to align themselves with true path. Often in tune with inner compass, guiding them toward destiny. Drive to align self and others with core values and principles. Can help others find their path and stay true to it. Must respect individual journeys and not impose own values on others.",
+      "keywords": ["alignment", "values", "guidance", "respect", "purpose", "integrity"],
+      "energy": "Transpersonal destiny through aligning others",
+      "lifeTheme": "To align self and others with true values"
+    },
+    "clarion": {
+      "name": "Left Angle Cross of The Clarion",
+      "type": "Left Angle",
+      "theme": "Awakening and alerting",
+      "variations": [
+        {
+          "personalitySun": 57,
+          "personalityEarth": 51,
+          "designSun": 62,
+          "designEarth": 61
+        },
+        {
+          "personalitySun": 51,
+          "personalityEarth": 57,
+          "designSun": 61,
+          "designEarth": 62
+        }
+      ],
+      "description": "Calling to awaken others. Unique ability to alert others to important truths. Should use ability responsibly, conveying messages with respect for others' autonomy. May be more introspective in process of spreading awareness.",
+      "keywords": ["awakening", "truth", "alertness", "respect", "awareness", "intuition"],
+      "energy": "Transpersonal destiny through awakening others",
+      "lifeTheme": "To awaken others to important truths"
+    },
+    "defiance": {
+      "name": "Left Angle Cross of Defiance",
+      "type": "Left Angle",
+      "theme": "Challenging the status quo",
+      "variations": [
+        {
+          "personalitySun": 2,
+          "personalityEarth": 1,
+          "designSun": 49,
+          "designEarth": 4
+        },
+        {
+          "personalitySun": 1,
+          "personalityEarth": 2,
+          "designSun": 4,
+          "designEarth": 49
+        }
+      ],
+      "description": "Strong spirit of defiance and desire to challenge status quo. Often independent thinkers who question established norms and seek innovative solutions. Defiance can be powerful force for change. May place more emphasis on self-discovery and personal development, driven by desire to live authentically in defiance of societal expectations.",
+      "keywords": ["defiance", "independence", "innovation", "authenticity", "rebellion", "change"],
+      "energy": "Transpersonal destiny through challenging norms",
+      "lifeTheme": "To defy conventions and pioneer new ways"
+    }
+  },
+  "lookupTables": {
+    "rightAngleByPersonalitySun": {
+      "1": ["sphinx"],
+      "2": ["sphinx"],
+      "3": ["laws"],
+      "4": ["explanation"],
+      "6": ["eden"],
+      "7": ["sphinx"],
+      "10": ["vesselOfLove"],
+      "11": ["eden"],
+      "12": ["eden"],
+      "13": ["sphinx"],
+      "15": ["vesselOfLove"],
+      "20": ["sleepingPhoenix"],
+      "23": ["explanation"],
+      "25": ["vesselOfLove"],
+      "34": ["sleepingPhoenix"],
+      "36": ["eden"],
+      "43": ["explanation"],
+      "46": ["vesselOfLove"],
+      "49": ["explanation"],
+      "50": ["laws"],
+      "55": ["sleepingPhoenix"],
+      "56": ["laws"],
+      "59": ["sleepingPhoenix"],
+      "60": ["laws"]
+    },
+    "juxtapositionByPersonalitySun": {
+      "1": ["selfExpression"],
+      "27": ["caring"],
+      "37": ["bargains"],
+      "53": ["beginnings"]
+    },
+    "leftAngleByPersonalitySun": {
+      "1": ["defiance"],
+      "2": ["defiance"],
+      "27": ["alignment"],
+      "28": ["alignment"],
+      "31": ["alpha"],
+      "41": ["alpha"],
+      "51": ["clarion"],
+      "57": ["clarion"]
+    }
+  }
+}

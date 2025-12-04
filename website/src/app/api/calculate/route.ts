@@ -152,8 +152,8 @@ function transformChartData(apiData: any, birthData: BirthData) {
   };
 }
 
-function extractGates(activations: any): Array<{ gate: number; line: number; planet: string }> {
-  const gates: Array<{ gate: number; line: number; planet: string }> = [];
+function extractGates(activations: any): Array<{ gate: number; line: number; planet: string; color?: number; tone?: number; base?: number }> {
+  const gates: Array<{ gate: number; line: number; planet: string; color?: number; tone?: number; base?: number }> = [];
   const planets = ['Sun', 'Earth', 'Rahu', 'Ketu', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
 
   for (const planet of planets) {
@@ -164,6 +164,9 @@ function extractGates(activations: any): Array<{ gate: number; line: number; pla
         gate: activations[planet].gate,
         line: activations[planet].line,
         planet: displayPlanet,
+        color: activations[planet].color,
+        tone: activations[planet].tone,
+        base: activations[planet].base,
       });
     }
   }
@@ -172,7 +175,7 @@ function extractGates(activations: any): Array<{ gate: number; line: number; pla
 }
 
 function combineGateActivations(personality: any[], design: any[]) {
-  const gateMap = new Map<number, { gate: number; line: number; planet: string; type: 'personality' | 'design' | 'both' }>();
+  const gateMap = new Map<number, { gate: number; line: number; planet: string; type: 'personality' | 'design' | 'both'; color?: number; tone?: number; base?: number }>();
 
   for (const p of personality) {
     gateMap.set(p.gate, { ...p, type: 'personality' });

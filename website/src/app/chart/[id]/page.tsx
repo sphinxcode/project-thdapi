@@ -136,7 +136,7 @@ export default function ChartPage() {
               personalityActivations={transformActivations(chart.personality)}
               designActivations={transformActivations(chart.design)}
               activationsToShow="all"
-              className="max-w-md mx-auto"
+              className="mx-auto"
             />
           </motion.div>
 
@@ -370,9 +370,24 @@ function ChannelsTab({ channels }: { channels: Array<{ gates: [number, number]; 
   );
 }
 
-function GatesTab({ gates }: { gates: Array<{ gate: number; line: number; planet: string; type: 'personality' | 'design' | 'both' }> }) {
+function GatesTab({ gates }: { gates: Array<{ gate: number; line: number; planet: string; type: 'personality' | 'design' | 'both'; color?: number; tone?: number; base?: number }> }) {
   const personalityGates = gates.filter(g => g.type === 'personality' || g.type === 'both');
   const designGates = gates.filter(g => g.type === 'design' || g.type === 'both');
+
+  // Deduplicate gates by planet within each section (keep first occurrence)
+  const deduplicateByPlanet = (gatesList: typeof gates) => {
+    const seenPlanets = new Set<string>();
+    return gatesList.filter(g => {
+      if (seenPlanets.has(g.planet)) {
+        return false;
+      }
+      seenPlanets.add(g.planet);
+      return true;
+    });
+  };
+
+  const uniquePersonalityGates = deduplicateByPlanet(personalityGates);
+  const uniqueDesignGates = deduplicateByPlanet(designGates);
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
@@ -382,13 +397,22 @@ function GatesTab({ gates }: { gates: Array<{ gate: number; line: number; planet
           Personality (Conscious)
         </h4>
         <div className="space-y-2">
-          {personalityGates.map(g => (
-            <div key={`p-${g.gate}`} className="flex items-center justify-between p-3 bg-white rounded-lg border border-[#E8DDD4]">
-              <div>
-                <span className="font-medium text-[#8B4557]">Gate {g.gate}.{g.line}</span>
-                <p className="text-sm text-[#6B4423]">{GATE_KEYWORDS[g.gate]}</p>
+          {uniquePersonalityGates.map(g => (
+            <div key={`p-${g.gate}`} className="p-3 bg-white rounded-lg border border-[#E8DDD4]">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="font-medium text-[#8B4557]">Gate {g.gate}.{g.line}</span>
+                  <p className="text-sm text-[#6B4423]">{GATE_KEYWORDS[g.gate]}</p>
+                </div>
+                <span className="text-lg" title={g.planet}>{PLANET_GLYPHS[g.planet]}</span>
               </div>
-              <span className="text-lg" title={g.planet}>{PLANET_GLYPHS[g.planet]}</span>
+              {(g.color !== undefined || g.tone !== undefined || g.base !== undefined) && (
+                <div className="flex gap-3 text-xs text-[#8B4557]/70 pt-2 border-t border-[#E8DDD4]">
+                  {g.color !== undefined && <span>Color: {g.color}</span>}
+                  {g.tone !== undefined && <span>Tone: {g.tone}</span>}
+                  {g.base !== undefined && <span>Base: {g.base}</span>}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -399,13 +423,22 @@ function GatesTab({ gates }: { gates: Array<{ gate: number; line: number; planet
           Design (Unconscious)
         </h4>
         <div className="space-y-2">
-          {designGates.map(g => (
-            <div key={`d-${g.gate}`} className="flex items-center justify-between p-3 bg-white rounded-lg border border-[#E8DDD4]">
-              <div>
-                <span className="font-medium text-[#8B4557]">Gate {g.gate}.{g.line}</span>
-                <p className="text-sm text-[#6B4423]">{GATE_KEYWORDS[g.gate]}</p>
+          {uniqueDesignGates.map(g => (
+            <div key={`d-${g.gate}`} className="p-3 bg-white rounded-lg border border-[#E8DDD4]">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="font-medium text-[#8B4557]">Gate {g.gate}.{g.line}</span>
+                  <p className="text-sm text-[#6B4423]">{GATE_KEYWORDS[g.gate]}</p>
+                </div>
+                <span className="text-lg" title={g.planet}>{PLANET_GLYPHS[g.planet]}</span>
               </div>
-              <span className="text-lg" title={g.planet}>{PLANET_GLYPHS[g.planet]}</span>
+              {(g.color !== undefined || g.tone !== undefined || g.base !== undefined) && (
+                <div className="flex gap-3 text-xs text-[#8B4557]/70 pt-2 border-t border-[#E8DDD4]">
+                  {g.color !== undefined && <span>Color: {g.color}</span>}
+                  {g.tone !== undefined && <span>Tone: {g.tone}</span>}
+                  {g.base !== undefined && <span>Base: {g.base}</span>}
+                </div>
+              )}
             </div>
           ))}
         </div>

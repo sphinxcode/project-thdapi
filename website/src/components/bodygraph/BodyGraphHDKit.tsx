@@ -396,7 +396,7 @@ export default function BodyGraphHDKit({
         type="image/svg+xml"
         data="/bodygraph-blank.svg"
         className="w-full h-auto"
-        style={{ maxWidth: '430px', margin: '0 auto' }}
+        style={{ maxWidth: '600px', margin: '0 auto' }}
       >
         Your browser does not support SVG
       </object>

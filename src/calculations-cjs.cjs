@@ -120,7 +120,7 @@ async function calculateAllPlanets(julianDay) {
       gate: sunActivation.gate,
       line: sunActivation.line,
       sign: sunActivation.sign
-    });
+    }, 'Sun');
 
     // Calculate Earth (180° from Sun)
     let earthLong = sunLong + 180;
@@ -131,7 +131,7 @@ async function calculateAllPlanets(julianDay) {
       gate: earthActivation.gate,
       line: earthActivation.line,
       sign: earthActivation.sign
-    });
+    }, 'Earth');
 
     // Calculate North Node (Rahu)
     const rahuLong = await calculatePlanetPosition(julianDay, PLANETS.TRUE_NODE);
@@ -141,7 +141,7 @@ async function calculateAllPlanets(julianDay) {
       gate: rahuActivation.gate,
       line: rahuActivation.line,
       sign: rahuActivation.sign
-    });
+    }, 'Rahu');
 
     // Calculate South Node (Ketu - 180° from Rahu)
     let ketuLong = rahuLong + 180;
@@ -152,7 +152,7 @@ async function calculateAllPlanets(julianDay) {
       gate: ketuActivation.gate,
       line: ketuActivation.line,
       sign: ketuActivation.sign
-    });
+    }, 'Ketu');
 
     // Calculate Moon
     const moonLong = await calculatePlanetPosition(julianDay, PLANETS.MOON);
@@ -162,7 +162,7 @@ async function calculateAllPlanets(julianDay) {
       gate: moonActivation.gate,
       line: moonActivation.line,
       sign: moonActivation.sign
-    });
+    }, 'Moon');
 
     // Calculate Mercury
     const mercuryLong = await calculatePlanetPosition(julianDay, PLANETS.MERCURY);
@@ -172,7 +172,7 @@ async function calculateAllPlanets(julianDay) {
       gate: mercuryActivation.gate,
       line: mercuryActivation.line,
       sign: mercuryActivation.sign
-    });
+    }, 'Mercury');
 
     // Calculate Venus (Note: Mars comes before Venus in HD)
     const venusLong = await calculatePlanetPosition(julianDay, PLANETS.VENUS);
@@ -182,7 +182,7 @@ async function calculateAllPlanets(julianDay) {
       gate: venusActivation.gate,
       line: venusActivation.line,
       sign: venusActivation.sign
-    });
+    }, 'Venus');
 
     // Calculate Mars
     const marsLong = await calculatePlanetPosition(julianDay, PLANETS.MARS);
@@ -192,7 +192,7 @@ async function calculateAllPlanets(julianDay) {
       gate: marsActivation.gate,
       line: marsActivation.line,
       sign: marsActivation.sign
-    });
+    }, 'Mars');
 
     // Calculate Jupiter
     const jupiterLong = await calculatePlanetPosition(julianDay, PLANETS.JUPITER);
@@ -202,7 +202,7 @@ async function calculateAllPlanets(julianDay) {
       gate: jupiterActivation.gate,
       line: jupiterActivation.line,
       sign: jupiterActivation.sign
-    });
+    }, 'Jupiter');
 
     // Calculate Saturn
     const saturnLong = await calculatePlanetPosition(julianDay, PLANETS.SATURN);
@@ -212,7 +212,7 @@ async function calculateAllPlanets(julianDay) {
       gate: saturnActivation.gate,
       line: saturnActivation.line,
       sign: saturnActivation.sign
-    });
+    }, 'Saturn');
 
     // Calculate Uranus
     const uranusLong = await calculatePlanetPosition(julianDay, PLANETS.URANUS);
@@ -222,7 +222,7 @@ async function calculateAllPlanets(julianDay) {
       gate: uranusActivation.gate,
       line: uranusActivation.line,
       sign: uranusActivation.sign
-    });
+    }, 'Uranus');
 
     // Calculate Neptune
     const neptuneLong = await calculatePlanetPosition(julianDay, PLANETS.NEPTUNE);
@@ -232,7 +232,7 @@ async function calculateAllPlanets(julianDay) {
       gate: neptuneActivation.gate,
       line: neptuneActivation.line,
       sign: neptuneActivation.sign
-    });
+    }, 'Neptune');
 
     // Calculate Pluto
     const plutoLong = await calculatePlanetPosition(julianDay, PLANETS.PLUTO);
@@ -242,7 +242,7 @@ async function calculateAllPlanets(julianDay) {
       gate: plutoActivation.gate,
       line: plutoActivation.line,
       sign: plutoActivation.sign
-    });
+    }, 'Pluto');
 
     return activations;
   } catch (error) {

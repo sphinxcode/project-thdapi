@@ -471,7 +471,7 @@ const exaltationsDetriments = {
 /**
  * Enrich a planetary activation with genetic data
  */
-function enrichActivation(activation) {
+function enrichActivation(activation, planetName) {
   const { gate, line } = activation;
   const gateKey = `${gate}.${line}`;
 
@@ -481,17 +481,32 @@ function enrichActivation(activation) {
   // Get codon data
   const codon = codonByGate[gate] || null;
 
-  // Get exaltation/detriment data
+  // Get exaltation/detriment data and determine fixing state
   const fixingData = exaltationsDetriments[gateKey] || {};
+  let fixingState = undefined;
 
-  return {
+  if (fixingData.exaltation || fixingData.detriment) {
+    if (planetName === fixingData.exaltation) {
+      fixingState = 'exalted';
+    } else if (planetName === fixingData.detriment) {
+      fixingState = 'detriment';
+    } else {
+      fixingState = 'juxtaposition';
+    }
+  }
+
+  const result = {
     ...activation,
     aminoAcid: aminoData.name || null,
     codonRing: aminoData.ring || null,
-    codon: codon,
-    exaltation: fixingData.exaltation || null,
-    detriment: fixingData.detriment || null
+    codon: codon
   };
+
+  if (fixingState) {
+    result.fixingState = fixingState;
+  }
+
+  return result;
 }
 
 module.exports = {
