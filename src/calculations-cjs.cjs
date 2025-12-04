@@ -433,19 +433,52 @@ async function calculateHumanDesign(params) {
       type = 'Projector';
     }
 
-    // Determine Authority
+    // Determine Authority with proper hierarchy and distinctions
     let authority = 'Lunar (wait 28 days)';
+
+    // 1. Emotional Authority (Solar Plexus defined) - Highest priority
     if (definedCenters.has('SolarPlexus')) {
       authority = 'Emotional';
-    } else if (hasSacral) {
-      authority = 'Sacral';
-    } else if (definedCenters.has('Spleen')) {
-      authority = 'Splenic';
-    } else if (definedCenters.has('Ego')) {
-      authority = 'Ego';
-    } else if (definedCenters.has('G')) {
-      authority = 'Self-Projected';
     }
+    // 2. Sacral Authority (Sacral defined, Solar Plexus undefined)
+    else if (hasSacral) {
+      authority = 'Sacral';
+    }
+    // 3. Splenic Authority (Spleen defined, Solar Plexus and Sacral undefined)
+    else if (definedCenters.has('Spleen')) {
+      authority = 'Splenic';
+    }
+    // 4. Ego Authority (Ego defined, Solar Plexus, Sacral, and Spleen undefined)
+    else if (definedCenters.has('Ego')) {
+      // Check if Ego is connected to Throat (determines Manifested vs Projected)
+      const egoDirectToThroat = channels.includes('21-45');
+      const egoViaGToThroat = channels.includes('25-51') &&
+                             channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33');
+
+      if (egoDirectToThroat || egoViaGToThroat) {
+        authority = 'Ego Manifested';
+      } else {
+        authority = 'Ego Projected';
+      }
+    }
+    // 5. Self-Projected Authority (G Center defined and connected to Throat)
+    else if (definedCenters.has('G')) {
+      // Check if G is connected to Throat
+      const gToThroat = channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33');
+
+      if (gToThroat && definedCenters.has('Throat')) {
+        authority = 'Self-Projected';
+      } else {
+        // G defined but not connected to Throat = Outer Authority
+        authority = 'No Inner Authority (Environment)';
+      }
+    }
+    // 6. Mental/Environmental Authority (Ajna or Head defined, no motor or G)
+    else if (definedCenters.has('Ajna') || definedCenters.has('Head')) {
+      authority = 'Mental/Environmental (Outer Authority)';
+    }
+    // 7. Lunar Authority (Reflector - no centers defined)
+    // Already set as default at the top
 
     // Calculate Incarnation Cross
     const incarnationCross = calculateIncarnationCross(
