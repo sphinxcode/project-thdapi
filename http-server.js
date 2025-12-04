@@ -19,6 +19,7 @@ console.log('✅ Swiss Ephemeris version loaded');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.API_KEY || 'your-secret-api-key-change-this';
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 // Middleware
 app.use(express.json());
@@ -53,9 +54,13 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'human-design-mcp-server',
-    version: '1.0.0-full',
+    version: '1.1.0-hybrid-location',
     timestamp: new Date().toISOString(),
-    auth: 'enabled'
+    auth: 'enabled',
+    features: {
+      staticDatabase: true,
+      googleMapsIntegration: !!GOOGLE_MAPS_API_KEY
+    }
   });
 });
 
@@ -79,6 +84,7 @@ app.post('/api/human-design', authMiddleware, async (req, res) => {
       birthLocation,
       latitude,
       longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     });
 
     res.json({
@@ -146,8 +152,12 @@ app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
-    version: '1.0.0-full',
+    version: '1.1.0-hybrid-location',
     auth: 'Bearer token required',
+    features: {
+      staticDatabase: 'Major cities worldwide',
+      googleMapsIntegration: GOOGLE_MAPS_API_KEY ? 'Enabled (fallback for unknown locations)' : 'Disabled',
+    },
     endpoints: {
       health: '/health (public)',
       calculate: '/api/human-design (protected)',
@@ -163,9 +173,15 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🔐 Auth: Bearer token enabled`);
   console.log(`📖 Health: http://0.0.0.0:${PORT}/health`);
   console.log(`🔗 API: http://0.0.0.0:${PORT}/api/human-design`);
-  
+  console.log(`🌍 Location: Static DB + ${GOOGLE_MAPS_API_KEY ? 'Google Maps (enabled)' : 'Manual coords only'}`);
+
   if (API_KEY === 'your-secret-api-key-change-this') {
     console.warn('⚠️  WARNING: Using default API key! Set API_KEY environment variable.');
+  }
+
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn('⚠️  Google Maps API not configured. Only static database cities supported.');
+    console.warn('   Set GOOGLE_MAPS_API_KEY environment variable to enable worldwide location lookup.');
   }
 });
 

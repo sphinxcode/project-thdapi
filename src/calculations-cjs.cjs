@@ -11,7 +11,7 @@
  */
 
 const swisseph = require('swisseph');
-const { getLocationInfo, getUTCOffset, convertToUTC } = require('./timezone-utils.cjs');
+const { getLocationInfo, getUTCOffset, convertToUTC } = require('./location-service.cjs');
 const { longitudeToGate } = require('./gate-mapping.cjs');
 const { HARMONIC_GATES, CENTERS_BY_CHANNEL } = require('./channel-data.cjs');
 const { calculateIncarnationCross } = require('./incarnation-crosses-data.cjs');
@@ -493,15 +493,37 @@ async function calculateHumanDesign(params) {
     const birthDate = params.birthDate || params;
     const birthTime = params.birthTime || arguments[1];
     const birthLocation = params.birthLocation || arguments[2];
+    const latitude = params.latitude;
+    const longitude = params.longitude;
+    const googleMapsApiKey = params.googleMapsApiKey || process.env.GOOGLE_MAPS_API_KEY;
 
-    // Get location info
-    const locationInfo = getLocationInfo(birthLocation);
-    if (!locationInfo) {
-      throw new Error(`Location not found: ${birthLocation}`);
+    // Location options for hybrid service
+    const locationOptions = {
+      googleMapsApiKey,
+      useGoogleMaps: !!googleMapsApiKey
+    };
+
+    let locationInfo;
+
+    // If latitude/longitude provided, use them directly
+    if (latitude !== undefined && longitude !== undefined) {
+      locationInfo = {
+        city: birthLocation,
+        lat: parseFloat(latitude),
+        lon: parseFloat(longitude),
+        tz: 'UTC', // Will be determined by timezone lookup if needed
+        source: 'manual-coordinates'
+      };
+    } else {
+      // Get location info using hybrid service (static DB + Google Maps fallback)
+      locationInfo = await getLocationInfo(birthLocation, birthDate, locationOptions);
+      if (!locationInfo) {
+        throw new Error(`Location not found: ${birthLocation}`);
+      }
     }
 
     // Convert to UTC (pass birthLocation string, not locationInfo object)
-    const utcData = convertToUTC(birthDate, birthTime, birthLocation);
+    const utcData = await convertToUTC(birthDate, birthTime, birthLocation, locationOptions);
 
     // Calculate Julian Day
     const julianDay = await new Promise((resolve, reject) => {
@@ -905,7 +927,8 @@ async function calculateHumanDesign(params) {
         time: birthTime,
         location: birthLocation,
         coordinates: `${locationInfo.lat}°N, ${locationInfo.lon}°E`,
-        timezone: locationInfo.tz
+        timezone: locationInfo.tz,
+        locationSource: locationInfo.source || 'unknown'
       },
       type,
       strategy: strategyByType[type] || 'Wait to Respond',
