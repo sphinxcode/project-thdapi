@@ -17,12 +17,13 @@ const locationCache = new Map();
  *
  * @param {string} locationString - Location name
  * @param {string} birthDate - Birth date (YYYY-MM-DD) for timezone calculation
+ * @param {string} birthTime - Birth time (HH:MM) for accurate timezone/DST
  * @param {object} options - Optional configuration
  * @param {string} options.googleMapsApiKey - Google Maps API key (optional)
  * @param {boolean} options.useGoogleMaps - Whether to use Google Maps as fallback (default: true if API key provided)
  * @returns {Promise<{city: string, tz: string, lat: number, lon: number, source: string}>}
  */
-async function getLocationInfo(locationString, birthDate, options = {}) {
+async function getLocationInfo(locationString, birthDate, birthTime, options = {}) {
   const { googleMapsApiKey, useGoogleMaps = !!googleMapsApiKey } = options;
 
   // 1. Try static database first
@@ -43,7 +44,7 @@ async function getLocationInfo(locationString, birthDate, options = {}) {
   }
 
   // 2. Check cache for previous Google Maps lookups
-  const cacheKey = `${locationString.toLowerCase()}-${birthDate}`;
+  const cacheKey = `${locationString.toLowerCase()}-${birthDate}-${birthTime}`;
   if (locationCache.has(cacheKey)) {
     const cached = locationCache.get(cacheKey);
     return {
@@ -58,6 +59,7 @@ async function getLocationInfo(locationString, birthDate, options = {}) {
       const result = await googleMaps.getCompleteLocationInfo(
         locationString,
         birthDate,
+        birthTime,
         googleMapsApiKey
       );
 
@@ -94,11 +96,12 @@ async function getLocationInfo(locationString, birthDate, options = {}) {
  * Get UTC offset for a location
  * @param {string} locationString - Location name
  * @param {string} birthDate - Birth date (YYYY-MM-DD)
+ * @param {string} birthTime - Birth time (HH:MM)
  * @param {object} options - Optional configuration
  * @returns {Promise<number>} UTC offset in hours
  */
-async function getUTCOffset(locationString, birthDate, options = {}) {
-  const locationInfo = await getLocationInfo(locationString, birthDate, options);
+async function getUTCOffset(locationString, birthDate, birthTime, options = {}) {
+  const locationInfo = await getLocationInfo(locationString, birthDate, birthTime, options);
 
   // Try to get DST-aware offset from static database
   try {
@@ -119,7 +122,7 @@ async function getUTCOffset(locationString, birthDate, options = {}) {
  * @returns {Promise<object>} UTC date/time information
  */
 async function convertToUTC(birthDate, birthTime, locationString, options = {}) {
-  const locationInfo = await getLocationInfo(locationString, birthDate, options);
+  const locationInfo = await getLocationInfo(locationString, birthDate, birthTime, options);
 
   // Try static database conversion first (handles DST properly)
   try {
@@ -135,15 +138,13 @@ async function convertToUTC(birthDate, birthTime, locationString, options = {}) 
       source: 'static-database'
     };
   } catch (error) {
-    // Fallback to manual conversion using offset
-    // Important: Don't use JavaScript Date parsing as it uses server's local timezone
-    // Instead, manually calculate UTC time from local time and offset
+    // Fallback: Use same logic as static database for consistency
+    // Manual calculation: UTC = LocalTime - Offset
     const offset = locationInfo.offset || 0;
     const [year, month, day] = birthDate.split('-').map(Number);
     const [hour, minute] = birthTime.split(':').map(Number);
 
-    // Convert to UTC: UTC = LocalTime - Offset
-    // For example: Austin 12:00 with offset -5 (CDT) = UTC 17:00
+    // Convert to UTC
     let utcHour = hour - offset;
     let utcDay = day;
     let utcMonth = month;
@@ -159,11 +160,13 @@ async function convertToUTC(birthDate, birthTime, locationString, options = {}) 
           utcMonth = 12;
           utcYear--;
         }
+        // Get last day of previous month (utcMonth is 1-indexed)
         utcDay = new Date(utcYear, utcMonth, 0).getDate();
       }
     } else if (utcHour >= 24) {
       utcHour -= 24;
       utcDay++;
+      // Get days in current month (utcMonth is 1-indexed)
       const daysInMonth = new Date(utcYear, utcMonth, 0).getDate();
       if (utcDay > daysInMonth) {
         utcDay = 1;

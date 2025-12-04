@@ -119,15 +119,17 @@ async function getTimezoneForCoordinates(lat, lon, timestamp, apiKey) {
  * Complete location lookup with timezone
  * @param {string} locationString - Location name
  * @param {string} birthDate - Birth date (YYYY-MM-DD) for timezone calculation
+ * @param {string} birthTime - Birth time (HH:MM) for accurate timezone/DST calculation
  * @param {string} apiKey - Google Maps API key
  * @returns {Promise<{city: string, tz: string, lat: number, lon: number, formattedAddress: string}>}
  */
-async function getCompleteLocationInfo(locationString, birthDate, apiKey) {
+async function getCompleteLocationInfo(locationString, birthDate, birthTime, apiKey) {
   // First geocode the location
   const geoResult = await geocodeLocation(locationString, apiKey);
 
-  // Convert birth date to timestamp for timezone lookup
-  const timestamp = Math.floor(new Date(birthDate).getTime() / 1000);
+  // Convert birth date+time to timestamp for timezone lookup
+  // Use UTC to avoid server timezone affecting the timestamp
+  const timestamp = Math.floor(new Date(`${birthDate}T${birthTime}:00Z`).getTime() / 1000);
 
   // Get timezone for the coordinates
   const tzResult = await getTimezoneForCoordinates(
