@@ -67,14 +67,14 @@ const PHS_MAPPINGS = {
     2: 'Hope',
     3: 'Desire',
     4: 'Need',
-    5: 'Guilt',
+    5: 'Probability',
     6: 'Innocence'
   },
   perspective: {
-    1: 'Survival',
+    1: 'Security',
     2: 'Possibility',
     3: 'Power',
-    4: 'Wanting',
+    4: 'Want',
     5: 'Probability',
     6: 'Personal'
   }
@@ -98,12 +98,12 @@ const COGNITION_TONES = {
  * Tones 1-3: Left (Strategic) | Tones 4-6: Right (Receptive)
  */
 const MOTIVATION_TONES = {
-  1: 'Security',     // Left - Survival-focused, foundational
-  2: 'Uncertainty',  // Left - Experience-based, curious
-  3: 'Action',       // Left - Active engagement, doing
-  4: 'Meditation',   // Right - Internal focus, concentration
-  5: 'Judgement',    // Right - Evaluation, discernment
-  6: 'Acceptance'    // Right - Allowing, receiving
+  1: 'Insecurity',   // Left - Fear-based awareness, vigilance
+  2: 'Possibility',  // Left - Exploring potential, curiosity
+  3: 'Desire',       // Left - Wanting, seeking, motivation
+  4: 'Need',         // Right - Essential requirements, necessities
+  5: 'Probability',  // Right - Likelihood assessment, evaluation
+  6: 'Innocence'     // Right - Pure, untainted perspective
 };
 
 /**
@@ -954,9 +954,56 @@ async function calculateHumanDesign(params) {
       personality,
       design,
       channels: channels.sort(),
+      centers: {
+        Head: {
+          defined: definedCenters.has('Head'),
+          type: 'pressure',
+          description: 'Inspiration and mental pressure'
+        },
+        Ajna: {
+          defined: definedCenters.has('Ajna'),
+          type: 'awareness',
+          description: 'Mental awareness and conceptualization'
+        },
+        Throat: {
+          defined: definedCenters.has('Throat'),
+          type: 'manifestation',
+          description: 'Communication and manifestation'
+        },
+        G: {
+          defined: definedCenters.has('G'),
+          type: 'identity',
+          description: 'Identity, direction, and love'
+        },
+        SolarPlexus: {
+          defined: definedCenters.has('SolarPlexus'),
+          type: 'motor-awareness',
+          description: 'Emotions and emotional awareness'
+        },
+        Sacral: {
+          defined: definedCenters.has('Sacral'),
+          type: 'motor',
+          description: 'Life force and work energy'
+        },
+        Spleen: {
+          defined: definedCenters.has('Spleen'),
+          type: 'awareness',
+          description: 'Survival instinct and body awareness'
+        },
+        Ego: {
+          defined: definedCenters.has('Ego'),
+          type: 'motor',
+          description: 'Willpower and self-worth'
+        },
+        Root: {
+          defined: definedCenters.has('Root'),
+          type: 'pressure-motor',
+          description: 'Pressure to act and adrenaline'
+        }
+      },
       definedCenters: Array.from(definedCenters).sort(),
       extras,
-      version: '3.7.0-houses-and-extras'
+      version: '3.8.0-fixed-mappings'
     };
 
   } catch (error) {
