@@ -490,6 +490,49 @@ async function calculateHumanDesign(params) {
       design.Sun.line
     );
 
+    // Strategy mapping
+    const strategyByType = {
+      'Generator': 'Wait to Respond',
+      'Manifesting Generator': 'Wait to Respond',
+      'Projector': 'Wait for the Invitation',
+      'Manifestor': 'Inform',
+      'Reflector': 'Wait a Lunar Cycle'
+    };
+
+    // Signature (feeling when living correctly)
+    const signatureByType = {
+      'Generator': 'Satisfaction',
+      'Manifesting Generator': 'Satisfaction and Peace',
+      'Projector': 'Success',
+      'Manifestor': 'Peace',
+      'Reflector': 'Surprise'
+    };
+
+    // Not-Self Theme (feeling when not living correctly)
+    const notSelfThemeByType = {
+      'Generator': 'Frustration',
+      'Manifesting Generator': 'Frustration and Anger',
+      'Projector': 'Bitterness',
+      'Manifestor': 'Anger',
+      'Reflector': 'Disappointment'
+    };
+
+    // Profile names
+    const profileNames = {
+      '1/3': 'Investigator Martyr',
+      '1/4': 'Investigator Opportunist',
+      '2/4': 'Hermit Opportunist',
+      '2/5': 'Hermit Heretic',
+      '3/5': 'Martyr Heretic',
+      '3/6': 'Martyr Role Model',
+      '4/6': 'Opportunist Role Model',
+      '4/1': 'Opportunist Investigator',
+      '5/1': 'Heretic Investigator',
+      '5/2': 'Heretic Hermit',
+      '6/2': 'Role Model Hermit',
+      '6/3': 'Role Model Martyr'
+    };
+
     return {
       birthInfo: {
         date: birthDate,
@@ -499,14 +542,18 @@ async function calculateHumanDesign(params) {
         timezone: locationInfo.tz
       },
       type,
+      strategy: strategyByType[type] || 'Wait to Respond',
       authority,
+      signature: signatureByType[type] || 'Satisfaction',
+      notSelfTheme: notSelfThemeByType[type] || 'Frustration',
       profile,
+      profileName: profileNames[profile] || profile,
       incarnationCross,
       personality,
       design,
       channels: channels.sort(),
       definedCenters: Array.from(definedCenters).sort(),
-      version: '3.0.0-with-incarnation-cross'
+      version: '3.1.0-with-enhanced-data'
     };
 
   } catch (error) {
