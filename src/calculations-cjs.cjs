@@ -79,15 +79,29 @@ const PHS_MAPPINGS = {
 };
 
 /**
- * Environmental Tone mappings based on Tone
+ * Cognition Tone mappings (for Digestion and Perspective)
+ * Used for environmentalTone and perspectiveTone
  */
-const ENVIRONMENTAL_TONES = {
-  1: 'Smell',
-  2: 'Taste',
-  3: 'Outer Vision',
-  4: 'Inner Vision',
-  5: 'Feeling',
-  6: 'Touch'
+const COGNITION_TONES = {
+  1: 'Smell',         // Left - Splenic, primitive awareness
+  2: 'Taste',         // Left - Splenic, discernment
+  3: 'Outer Vision',  // Left - Ajna, external awareness
+  4: 'Inner Vision',  // Right - Ajna, internal sight
+  5: 'Feeling',       // Right - Solar Plexus, vibrational
+  6: 'Touch'          // Right - Solar Plexus, physical connection
+};
+
+/**
+ * Motivation Tone mappings
+ * Tones 1-3: Left (Strategic) | Tones 4-6: Right (Receptive)
+ */
+const MOTIVATION_TONES = {
+  1: 'Security',     // Left - Survival-focused, foundational
+  2: 'Uncertainty',  // Left - Experience-based, curious
+  3: 'Action',       // Left - Active engagement, doing
+  4: 'Meditation',   // Right - Internal focus, concentration
+  5: 'Judgement',    // Right - Evaluation, discernment
+  6: 'Acceptance'    // Right - Allowing, receiving
 };
 
 /**
@@ -648,8 +662,11 @@ async function calculateHumanDesign(params) {
     const environmentType = PHS_MAPPINGS.environmentType[designKetuColorSide][design.Ketu.color];
     const environment = `${environmentType} ${environmentBase}`;
 
-    // Environmental Tone is based on Design Ketu (South Node) Tone
-    const environmentalTone = ENVIRONMENTAL_TONES[design.Ketu.tone];
+    // Tone names (cognition and motivation types)
+    const digestionToneName = COGNITION_TONES[design.Sun.tone];
+    const environmentalToneName = COGNITION_TONES[design.Ketu.tone];
+    const motivationToneName = MOTIVATION_TONES[personality.Sun.tone];
+    const perspectiveToneName = COGNITION_TONES[personality.Rahu.tone];
 
     // Calculate Rave Psychology
     // Motivation is based on Personality Sun Color
@@ -677,21 +694,21 @@ async function calculateHumanDesign(params) {
       variableType,
       phs: {
         digestion,
-        digestionTone: design.Sun.tone,
+        digestionTone: digestionToneName,
         environment,
-        environmentalTone
+        environmentalTone: environmentalToneName
       },
       ravePsychology: {
         motivation,
-        motivationTone: personality.Sun.tone,
+        motivationTone: motivationToneName,
         perspective,
-        perspectiveTone: personality.Rahu.tone
+        perspectiveTone: perspectiveToneName
       },
       personality,
       design,
       channels: channels.sort(),
       definedCenters: Array.from(definedCenters).sort(),
-      version: '3.4.0-correct-phs-and-variables'
+      version: '3.5.0-proper-tone-names'
     };
 
   } catch (error) {
