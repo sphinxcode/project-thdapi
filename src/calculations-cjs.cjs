@@ -14,6 +14,7 @@ const swisseph = require('swisseph');
 const { getLocationInfo, getUTCOffset, convertToUTC } = require('./timezone-utils.cjs');
 const { longitudeToGate } = require('./gate-mapping.cjs');
 const { HARMONIC_GATES, CENTERS_BY_CHANNEL } = require('./channel-data.cjs');
+const { calculateIncarnationCross } = require('./incarnation-crosses-data.cjs');
 
 // Swiss Ephemeris planet constants
 const PLANETS = {
@@ -104,64 +105,6 @@ function safeGetGate(longitude, planetName) {
 }
 
 /**
- * PHS and Rave Psychology mappings based on Color
- */
-const PHS_MAPPINGS = {
-  digestion: {
-    1: 'Appetite',
-    2: 'Taste',
-    3: 'Thirst',
-    4: 'Touch',
-    5: 'Sound',
-    6: 'Light'
-  },
-  digestionType: {
-    left: { 1: 'Consecutive', 2: 'Open', 3: 'Hot', 4: 'Calm', 5: 'High', 6: 'Direct' },
-    right: { 1: 'Alternating', 2: 'Closed', 3: 'Cold', 4: 'Nervous', 5: 'Low', 6: 'Indirect' }
-  },
-  environment: {
-    1: 'Caves',
-    2: 'Markets',
-    3: 'Kitchens',
-    4: 'Mountains',
-    5: 'Valleys',
-    6: 'Shores'
-  },
-  environmentType: {
-    left: { 1: 'Selective', 2: 'Internal', 3: 'Wet', 4: 'Active', 5: 'Narrow', 6: 'Natural' },
-    right: { 1: 'Blending', 2: 'External', 3: 'Dry', 4: 'Passive', 5: 'Wide', 6: 'Artificial' }
-  },
-  motivation: {
-    1: 'Fear',
-    2: 'Hope',
-    3: 'Desire',
-    4: 'Need',
-    5: 'Guilt',
-    6: 'Innocence'
-  },
-  perspective: {
-    1: 'Survival',
-    2: 'Possibility',
-    3: 'Power',
-    4: 'Wanting',
-    5: 'Probability',
-    6: 'Personal'
-  }
-};
-
-/**
- * Tone mappings based on Tone (applies to both PHS and Rave Psychology)
- */
-const TONES = {
-  1: 'Smell',
-  2: 'Taste',
-  3: 'Outer Vision',
-  4: 'Inner Vision',
-  5: 'Feeling',
-  6: 'Touch'
-};
-
-/**
  * Calculate all planetary activations for Personality or Design
  */
 async function calculateAllPlanets(julianDay) {
@@ -175,9 +118,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: sunLong,
       gate: sunActivation.gate,
       line: sunActivation.line,
-      color: sunActivation.color,
-      tone: sunActivation.tone,
-      base: sunActivation.base,
       sign: sunActivation.sign
     };
 
@@ -189,9 +129,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: earthLong,
       gate: earthActivation.gate,
       line: earthActivation.line,
-      color: earthActivation.color,
-      tone: earthActivation.tone,
-      base: earthActivation.base,
       sign: earthActivation.sign
     };
 
@@ -202,9 +139,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: rahuLong,
       gate: rahuActivation.gate,
       line: rahuActivation.line,
-      color: rahuActivation.color,
-      tone: rahuActivation.tone,
-      base: rahuActivation.base,
       sign: rahuActivation.sign
     };
 
@@ -216,9 +150,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: ketuLong,
       gate: ketuActivation.gate,
       line: ketuActivation.line,
-      color: ketuActivation.color,
-      tone: ketuActivation.tone,
-      base: ketuActivation.base,
       sign: ketuActivation.sign
     };
 
@@ -229,9 +160,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: moonLong,
       gate: moonActivation.gate,
       line: moonActivation.line,
-      color: moonActivation.color,
-      tone: moonActivation.tone,
-      base: moonActivation.base,
       sign: moonActivation.sign
     };
 
@@ -242,9 +170,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: mercuryLong,
       gate: mercuryActivation.gate,
       line: mercuryActivation.line,
-      color: mercuryActivation.color,
-      tone: mercuryActivation.tone,
-      base: mercuryActivation.base,
       sign: mercuryActivation.sign
     };
 
@@ -255,9 +180,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: venusLong,
       gate: venusActivation.gate,
       line: venusActivation.line,
-      color: venusActivation.color,
-      tone: venusActivation.tone,
-      base: venusActivation.base,
       sign: venusActivation.sign
     };
 
@@ -268,9 +190,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: marsLong,
       gate: marsActivation.gate,
       line: marsActivation.line,
-      color: marsActivation.color,
-      tone: marsActivation.tone,
-      base: marsActivation.base,
       sign: marsActivation.sign
     };
 
@@ -281,9 +200,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: jupiterLong,
       gate: jupiterActivation.gate,
       line: jupiterActivation.line,
-      color: jupiterActivation.color,
-      tone: jupiterActivation.tone,
-      base: jupiterActivation.base,
       sign: jupiterActivation.sign
     };
 
@@ -294,9 +210,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: saturnLong,
       gate: saturnActivation.gate,
       line: saturnActivation.line,
-      color: saturnActivation.color,
-      tone: saturnActivation.tone,
-      base: saturnActivation.base,
       sign: saturnActivation.sign
     };
 
@@ -307,9 +220,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: uranusLong,
       gate: uranusActivation.gate,
       line: uranusActivation.line,
-      color: uranusActivation.color,
-      tone: uranusActivation.tone,
-      base: uranusActivation.base,
       sign: uranusActivation.sign
     };
 
@@ -320,9 +230,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: neptuneLong,
       gate: neptuneActivation.gate,
       line: neptuneActivation.line,
-      color: neptuneActivation.color,
-      tone: neptuneActivation.tone,
-      base: neptuneActivation.base,
       sign: neptuneActivation.sign
     };
 
@@ -333,9 +240,6 @@ async function calculateAllPlanets(julianDay) {
       longitude: plutoLong,
       gate: plutoActivation.gate,
       line: plutoActivation.line,
-      color: plutoActivation.color,
-      tone: plutoActivation.tone,
-      base: plutoActivation.base,
       sign: plutoActivation.sign
     };
 
@@ -529,152 +433,29 @@ async function calculateHumanDesign(params) {
       type = 'Projector';
     }
 
-    // Determine Authority with proper hierarchy and distinctions
+    // Determine Authority
     let authority = 'Lunar (wait 28 days)';
-
-    // 1. Emotional Authority (Solar Plexus defined) - Highest priority
     if (definedCenters.has('SolarPlexus')) {
       authority = 'Emotional';
-    }
-    // 2. Sacral Authority (Sacral defined, Solar Plexus undefined)
-    else if (hasSacral) {
+    } else if (hasSacral) {
       authority = 'Sacral';
-    }
-    // 3. Splenic Authority (Spleen defined, Solar Plexus and Sacral undefined)
-    else if (definedCenters.has('Spleen')) {
+    } else if (definedCenters.has('Spleen')) {
       authority = 'Splenic';
-    }
-    // 4. Ego Authority (Ego defined, Solar Plexus, Sacral, and Spleen undefined)
-    else if (definedCenters.has('Ego')) {
-      // Check if Ego is connected to Throat (determines Manifested vs Projected)
-      const egoDirectToThroat = channels.includes('21-45');
-      const egoViaGToThroat = channels.includes('25-51') &&
-                             channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33');
-
-      if (egoDirectToThroat || egoViaGToThroat) {
-        authority = 'Ego Manifested';
-      } else {
-        authority = 'Ego Projected';
-      }
-    }
-    // 5. Self-Projected Authority (G Center defined and connected to Throat)
-    else if (definedCenters.has('G')) {
-      // Check if G is connected to Throat
-      const gToThroat = channels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33');
-
-      if (gToThroat && definedCenters.has('Throat')) {
-        authority = 'Self-Projected';
-      } else {
-        // G defined but not connected to Throat = Outer Authority
-        authority = 'No Inner Authority (Environment)';
-      }
-    }
-    // 6. Mental/Environmental Authority (Ajna or Head defined, no motor or G)
-    else if (definedCenters.has('Ajna') || definedCenters.has('Head')) {
-      authority = 'Mental/Environmental (Outer Authority)';
-    }
-    // 7. Lunar Authority (Reflector - no centers defined)
-    // Already set as default at the top
-
-    // Calculate Definition (how centers are connected)
-    function calculateDefinition(definedCenters, channels) {
-      if (definedCenters.size === 0) {
-        return 'None';
-      }
-
-      // Build adjacency map of connected centers
-      const centerConnections = new Map();
-      definedCenters.forEach(center => {
-        centerConnections.set(center, new Set());
-      });
-
-      // Add connections based on channels
-      channels.forEach(channel => {
-        const channelCenters = CENTERS_BY_CHANNEL[channel];
-        if (channelCenters && channelCenters.length === 2) {
-          const [center1, center2] = channelCenters;
-          if (centerConnections.has(center1) && centerConnections.has(center2)) {
-            centerConnections.get(center1).add(center2);
-            centerConnections.get(center2).add(center1);
-          }
-        }
-      });
-
-      // Find connected components using DFS
-      const visited = new Set();
-      let componentCount = 0;
-
-      function dfs(center) {
-        visited.add(center);
-        const neighbors = centerConnections.get(center);
-        if (neighbors) {
-          neighbors.forEach(neighbor => {
-            if (!visited.has(neighbor)) {
-              dfs(neighbor);
-            }
-          });
-        }
-      }
-
-      // Count separate groups
-      definedCenters.forEach(center => {
-        if (!visited.has(center)) {
-          componentCount++;
-          dfs(center);
-        }
-      });
-
-      // Return definition based on component count
-      if (componentCount === 1) {
-        return 'Single';
-      } else if (componentCount === 2) {
-        return 'Split';
-      } else if (componentCount === 3) {
-        return 'Triple Split';
-      } else if (componentCount === 4) {
-        return 'Quadruple Split';
-      } else {
-        return 'None';
-      }
+    } else if (definedCenters.has('Ego')) {
+      authority = 'Ego';
+    } else if (definedCenters.has('G')) {
+      authority = 'Self-Projected';
     }
 
-    const definition = calculateDefinition(definedCenters, channels);
-
-    // Calculate Variable Type (16 types: PLR DLR, PLL DLL, etc.)
-    // Based on tones of Personality Sun, Personality Rahu, Design Sun, Design Ketu
-    const variableType = `P${personality.Sun.tone < 4 ? 'L' : 'R'}${personality.Rahu.tone < 4 ? 'L' : 'R'} D${design.Sun.tone < 4 ? 'L' : 'R'}${design.Ketu.tone < 4 ? 'L' : 'R'}`;
-
-    // Calculate PHS (Primary Health System)
-    // Digestion is based on Design Sun Color
-    const designSunColorSide = design.Sun.tone < 4 ? 'left' : 'right';
-    const digestionBase = PHS_MAPPINGS.digestion[design.Sun.color];
-    const digestionType = PHS_MAPPINGS.digestionType[designSunColorSide][design.Sun.color];
-    const digestion = `${digestionType} ${digestionBase}`;
-
-    // Digestion Tone is based on Design Sun Tone
-    const digestionTone = TONES[design.Sun.tone];
-
-    // Environment is based on Design Ketu (South Node) Color
-    const designKetuColorSide = design.Ketu.tone < 4 ? 'left' : 'right';
-    const environmentBase = PHS_MAPPINGS.environment[design.Ketu.color];
-    const environmentType = PHS_MAPPINGS.environmentType[designKetuColorSide][design.Ketu.color];
-    const environment = `${environmentType} ${environmentBase}`;
-
-    // Environmental Tone is based on Design Ketu (South Node) Tone
-    const environmentalTone = TONES[design.Ketu.tone];
-
-    // Calculate Rave Psychology
-    // Motivation is based on Personality Sun Color
-    const motivation = PHS_MAPPINGS.motivation[personality.Sun.color];
-
-    // Motivation Tone is based on Personality Sun Tone
-    const motivationTone = TONES[personality.Sun.tone];
-
-    // Perspective is based on Personality Rahu (North Node) Color
-    const perspective = PHS_MAPPINGS.perspective[personality.Rahu.color];
-
-    // Perspective Tone is based on Personality Rahu (North Node) Tone
-    const perspectiveTone = TONES[personality.Rahu.tone];
+    // Calculate Incarnation Cross
+    const incarnationCross = calculateIncarnationCross(
+      personality.Sun.gate,
+      personality.Earth.gate,
+      design.Sun.gate,
+      design.Earth.gate,
+      personality.Sun.line,
+      design.Sun.line
+    );
 
     return {
       birthInfo: {
@@ -686,26 +467,13 @@ async function calculateHumanDesign(params) {
       },
       type,
       authority,
-      definition,
       profile,
-      variableType,
-      phs: {
-        digestion,
-        digestionTone,
-        environment,
-        environmentalTone
-      },
-      ravePsychology: {
-        motivation,
-        motivationTone,
-        perspective,
-        perspectiveTone
-      },
+      incarnationCross,
       personality,
       design,
       channels: channels.sort(),
       definedCenters: Array.from(definedCenters).sort(),
-      version: '3.0.0-extended'
+      version: '3.0.0-with-incarnation-cross'
     };
 
   } catch (error) {

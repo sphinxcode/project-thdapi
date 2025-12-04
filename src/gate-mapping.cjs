@@ -124,22 +124,16 @@ const SIGN_NAMES = [
 ];
 
 /**
- * Convert longitude to gate/line/color/tone/base using hdkit's formula
+ * Convert longitude to gate/line using hdkit's 384-line formula
  * Based on hdkit's getActivationFromDegrees function
  *
  * Formula:
- * - 360° wheel divided into:
- *   - 64 gates (64 gates)
- *   - 384 lines (64 gates × 6 lines)
- *   - 2304 colors (64 gates × 6 lines × 6 colors)
- *   - 13824 tones (64 gates × 6 lines × 6 colors × 6 tones)
- *   - 69120 bases (64 gates × 6 lines × 6 colors × 6 tones × 5 bases)
+ * - 360° wheel divided into 384 lines (64 gates × 6 lines)
+ * - Each line = 0.9375° (360 / 384)
+ * - Each gate = 5.625° (6 lines × 0.9375)
  * - percentageThrough = degrees / 360
  * - gateIndex = floor(percentageThrough * 64)
  * - line = (floor(percentageThrough * 384) % 6) + 1
- * - color = (floor(percentageThrough * 2304) % 6) + 1
- * - tone = (floor(percentageThrough * 13824) % 6) + 1
- * - base = (floor(percentageThrough * 69120) % 5) + 1
  */
 function longitudeToGate(longitude) {
   // Normalize to 0-360
@@ -155,13 +149,10 @@ function longitudeToGate(longitude) {
   // Calculate percentage through the wheel
   const percentageThrough = hdDegrees / 360;
 
-  // Get gate index (0-63), line (1-6), color (1-6), tone (1-6), base (1-5)
+  // Get gate index (0-63) and line (1-6)
   const gateIndex = Math.floor(percentageThrough * 64);
   const gate = GATE_ORDER[gateIndex];
   const line = (Math.floor(percentageThrough * 384) % 6) + 1;
-  const color = (Math.floor(percentageThrough * 2304) % 6) + 1;
-  const tone = (Math.floor(percentageThrough * 13824) % 6) + 1;
-  const base = (Math.floor(percentageThrough * 69120) % 5) + 1;
 
   // Determine zodiac sign
   const signNum = Math.floor(normalizedLon / 30);
@@ -171,9 +162,6 @@ function longitudeToGate(longitude) {
   return {
     gate: gate,
     line: line,
-    color: color,
-    tone: tone,
-    base: base,
     sign: sign,
     signNum: signNum + 1, // 1-based for compatibility
     degreeInSign: degreeInSign,
