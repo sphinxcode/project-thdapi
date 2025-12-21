@@ -319,16 +319,22 @@ function calculateIncarnationCross(personalitySun, personalityEarth, designSun, 
   let crossType;
   let searchList;
 
-  if (personalitySunLine >= 1 && personalitySunLine <= 4) {
-    // Right Angle Cross (lines 1-4)
+  if (personalitySunLine >= 1 && personalitySunLine <= 3) {
+    // Right Angle (Profiles 1/3, 1/4, 2/4, 2/5, 3/5, 3/6)
     crossType = 'Right Angle';
     searchList = rightAngleCrosses;
-  } else if (personalitySunLine >= 5 && personalitySunLine <= 6 && designSunLine >= 1 && designSunLine <= 2) {
-    // Juxtaposition Cross (personality lines 5-6, design lines 1-2)
-    crossType = 'Juxtaposition';
-    searchList = juxtapositionCrosses;
-  } else if (personalitySunLine >= 5 && personalitySunLine <= 6 && designSunLine >= 3 && designSunLine <= 6) {
-    // Left Angle Cross (personality lines 5-6, design lines 3-6)
+  } else if (personalitySunLine === 4) {
+    // Line 4: 4/6 is Right Angle, 4/1 is Juxtaposition
+    if (designSunLine === 1) {
+      crossType = 'Juxtaposition';
+      searchList = juxtapositionCrosses;
+    } else {
+      // Default to Right Angle (handles 4/6)
+      crossType = 'Right Angle';
+      searchList = rightAngleCrosses;
+    }
+  } else if (personalitySunLine >= 5 && personalitySunLine <= 6) {
+    // Left Angle (Profiles 5/1, 5/2, 6/2, 6/3)
     crossType = 'Left Angle';
     searchList = leftAngleCrosses;
   } else {

@@ -14,7 +14,9 @@ import readline from 'readline';
 
 // Load Swiss Ephemeris version
 const { calculateHumanDesign } = require('./src/calculations-cjs.cjs');
+const { transformToV1, transformToV2 } = require('./src/response-transformers.cjs');
 console.log('✅ Swiss Ephemeris version loaded');
+console.log('✅ V1/V2 Response Transformers loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 // Auth middleware
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
@@ -36,16 +38,16 @@ const authMiddleware = (req, res, next) => {
       message: 'Please provide: Authorization: Bearer YOUR_API_KEY'
     });
   }
-  
+
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-  
+
   if (token !== API_KEY) {
     return res.status(403).json({
       success: false,
       error: 'Forbidden - Invalid API key'
     });
   }
-  
+
   next();
 };
 
@@ -101,11 +103,174 @@ app.post('/api/human-design', authMiddleware, async (req, res) => {
   }
 });
 
-// Protected: Alternative MCP endpoint
+// =============================================================================
+// V1 Endpoint - Lean Enterprise API
+// =============================================================================
+app.post('/api/v1/data', authMiddleware, async (req, res) => {
+  try {
+    const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required',
+      });
+    }
+
+    const fullResult = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform to V1 lean format
+    const v1Result = transformToV1(fullResult);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v1'
+      },
+      data: v1Result,
+    });
+  } catch (error) {
+    console.error('Error calculating Human Design (V1):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
+// V1 Endpoint with Tooltips - Lean Enterprise API + Full Tooltips
+// =============================================================================
+app.post('/api/v1/data-tooltip', authMiddleware, async (req, res) => {
+  try {
+    const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required',
+      });
+    }
+
+    const fullResult = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform to V1 with full tooltips
+    const v1Result = transformToV1(fullResult, true);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v1-tooltip'
+      },
+      data: v1Result,
+    });
+  } catch (error) {
+    console.error('Error calculating Human Design (V1-tooltip):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
+// V2 Endpoint - Full Featured API (empty tooltips by default)
+// =============================================================================
+app.post('/api/v2/data', authMiddleware, async (req, res) => {
+  try {
+    const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required',
+      });
+    }
+
+    const fullResult = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform to V2 format (empty tooltips)
+    const v2Result = transformToV2(fullResult, false);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '2.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v2'
+      },
+      data: v2Result,
+    });
+  } catch (error) {
+    console.error('Error calculating Human Design (V2):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
+// V2 Endpoint with Tooltips - Full Featured API + Full Tooltips
+// =============================================================================
+app.post('/api/v2/data-tooltip', authMiddleware, async (req, res) => {
+  try {
+    const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required',
+      });
+    }
+
+    const fullResult = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform to V2 with full tooltips
+    const v2Result = transformToV2(fullResult, true);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '2.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v2-tooltip'
+      },
+      data: v2Result,
+    });
+  } catch (error) {
+    console.error('Error calculating Human Design (V2-tooltip):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
   try {
     const mcpServer = spawn('node', ['index-with-swiss.js']);
-    
+
     const rl = readline.createInterface({
       input: mcpServer.stdout,
       output: mcpServer.stdin,
@@ -152,16 +317,22 @@ app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
-    version: '1.1.0-hybrid-location',
+    version: '2.1.0',
     auth: 'Bearer token required',
     features: {
       staticDatabase: 'Major cities worldwide',
       googleMapsIntegration: GOOGLE_MAPS_API_KEY ? 'Enabled (fallback for unknown locations)' : 'Disabled',
+      asteroids: 'Chiron, Ceres, Pallas, Juno, Vesta',
+      chartAngles: 'AC, MC, IC, DC'
     },
     endpoints: {
       health: '/health (public)',
-      calculate: '/api/human-design (protected)',
-      mcp: '/api/mcp/calculate (protected)',
+      v1: '/api/v1/data - Lean enterprise (empty tooltips)',
+      v1Tooltip: '/api/v1/data-tooltip - Lean enterprise (full tooltips)',
+      v2: '/api/v2/data - Full featured (empty tooltips)',
+      v2Tooltip: '/api/v2/data-tooltip - Full featured (full tooltips)',
+      legacy: '/api/human-design - Original format',
+      mcp: '/api/mcp/calculate',
     },
     documentation: 'https://github.com/sphinxcode/humandesignmcp',
   });

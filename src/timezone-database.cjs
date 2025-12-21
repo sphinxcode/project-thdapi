@@ -36,12 +36,12 @@ const DST_HISTORY = {
  */
 function findTimezoneByCity(cityName) {
   const normalized = cityName.toLowerCase().trim();
-  
+
   for (const [tz, data] of Object.entries(TIMEZONE_DB)) {
     for (const city of data.cities) {
-      if (city.toLowerCase() === normalized || 
-          normalized.includes(city.toLowerCase()) ||
-          city.toLowerCase().includes(normalized)) {
+      if (city.toLowerCase() === normalized ||
+        normalized.includes(city.toLowerCase()) ||
+        city.toLowerCase().includes(normalized)) {
         return {
           timezone: tz,
           offset: data.offset,
@@ -52,7 +52,7 @@ function findTimezoneByCity(cityName) {
       }
     }
   }
-  
+
   // Не найдено - возвращаем null чтобы использовать Google Maps API
   console.log(`City not found in database: ${cityName}, will try Google Maps API`);
   return null;
@@ -64,16 +64,16 @@ function findTimezoneByCity(cityName) {
 function isDST(birthDate, timezone) {
   const [year, month, day] = birthDate.split('-').map(Number);
   const dstInfo = DST_HISTORY[timezone];
-  
+
   if (!dstInfo) return false;
-  
+
   // Специальные случаи
   if (timezone === 'Europe/Moscow') {
     return year < 2014; // DST отменен с 2014
   }
-  
+
   if (!dstInfo.alwaysDST) return false;
-  
+
   // Упрощенный расчет DST (март-октябрь для большинства стран)
   return month >= 3 && month <= 10;
 }
@@ -84,7 +84,7 @@ function isDST(birthDate, timezone) {
 function getUTCOffsetWithDST(birthDate, timezone) {
   const baseInfo = TIMEZONE_DB[timezone] || TIMEZONE_DB['Europe/Moscow'];
   const dstActive = isDST(birthDate, timezone);
-  
+
   return {
     offset: baseInfo.offset + (dstActive ? 1 : 0),
     dst: dstActive,
@@ -98,41 +98,43 @@ function getUTCOffsetWithDST(birthDate, timezone) {
 function convertLocalToUTC(birthDate, birthTime, cityName) {
   // Найти timezone по городу
   const locationInfo = findTimezoneByCity(cityName);
-  
+
   if (!locationInfo || !locationInfo.timezone) {
     // Город не найден - выбрасываем ошибку для использования Google Maps API
     throw new Error(`City not found in static database: ${cityName}`);
   }
-  
+
   // Получить offset с DST
   const offsetData = getUTCOffsetWithDST(birthDate, locationInfo.timezone);
-  
+
   // Парсинг времени
   const [year, month, day] = birthDate.split('-').map(Number);
   const [hour, minute] = birthTime.split(':').map(Number);
-  
+
   // Конвертация в UTC
   let utcHour = hour - offsetData.offset;
   let utcDay = day;
   let utcMonth = month;
   let utcYear = year;
-  
+
   // Обработка перехода через границы дня
   if (utcHour < 0) {
     utcHour += 24;
     utcDay--;
     if (utcDay < 1) {
       utcMonth--;
-      utcDay = new Date(year, month, 0).getDate();
       if (utcMonth < 1) {
         utcMonth = 12;
         utcYear--;
       }
+      // FIXED: Use utcYear and utcMonth, not original year and month
+      utcDay = new Date(utcYear, utcMonth, 0).getDate();
     }
   } else if (utcHour >= 24) {
     utcHour -= 24;
     utcDay++;
-    const daysInMonth = new Date(year, month, 0).getDate();
+    // FIXED: Use utcYear and utcMonth, not original year and month
+    const daysInMonth = new Date(utcYear, utcMonth, 0).getDate();
     if (utcDay > daysInMonth) {
       utcDay = 1;
       utcMonth++;
@@ -142,7 +144,7 @@ function convertLocalToUTC(birthDate, birthTime, cityName) {
       }
     }
   }
-  
+
   return {
     utcYear,
     utcMonth,

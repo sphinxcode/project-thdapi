@@ -1,7 +1,16 @@
 /**
  * Genetic Data for Human Design
- * Includes: Amino Acids, Codons (Nucleic Acids), and Exaltations/Detriments
+ * Includes: Amino Acids, Codons (Nucleic Acids), Exaltations/Detriments, Gate Names, and I Ching Glyphs
  */
+
+// Import gate names and I Ching glyphs
+const { GATE_NAMES, I_CHING_GLYPHS } = require('./gate-names-data.cjs');
+
+// Import gate enrichment data
+const { GATE_DESCRIPTIONS, HARMONIC_GATES, ELECTROMAGNETIC_GATES } = require('./gate-enrichment-data.cjs');
+
+// Import gate-to-center mapping
+const { GATE_TO_CENTER } = require('./gate-to-center-mapping.cjs');
 
 // Amino Acids by Gate with Ring information
 const aminoAcidByGate = {
@@ -469,7 +478,7 @@ const exaltationsDetriments = {
 };
 
 /**
- * Enrich a planetary activation with genetic data
+ * Enrich a planetary activation with genetic data and gate enrichment
  */
 function enrichActivation(activation, planetName) {
   const { gate, line, color, tone, base } = activation;
@@ -481,22 +490,37 @@ function enrichActivation(activation, planetName) {
   // Get codon data
   const codon = codonByGate[gate] || null;
 
+  // Get I Ching glyph
+  const iChingGlyph = I_CHING_GLYPHS[gate] || null;
+
+  // Get center origin
+  const centerOrigin = GATE_TO_CENTER[gate] || null;
+
+  // Get harmonic partner (opposite gate in wheel)
+  const harmonicPartner = HARMONIC_GATES[gate] || null;
+
+  // Get electromagnetic partner (channel partner)
+  const electromagnetPartner = ELECTROMAGNETIC_GATES[gate] || null;
+
   // Get exaltation/detriment data and determine fixing state
   const fixingData = exaltationsDetriments[gateKey] || {};
   let fixingState = undefined;
 
-  if (fixingData.exaltation || fixingData.detriment) {
-    if (planetName === fixingData.exaltation) {
-      fixingState = 'exalted';
-    } else if (planetName === fixingData.detriment) {
-      fixingState = 'detriment';
-    } else {
-      fixingState = 'juxtaposition';
-    }
+  // Check if planet matches exaltation or detriment
+  if (planetName === fixingData.exaltation) {
+    fixingState = 'exalted';
+  } else if (planetName === fixingData.detriment) {
+    fixingState = 'detriment';
   }
+  // else: leave undefined
+  // Note: Juxtaposition will be detected later by comparing personality and design
 
   const result = {
     ...activation,
+    iChingGlyph,
+    centerOrigin,
+    harmonicPartner,
+    electromagnetPartner,
     color,
     tone,
     base,
@@ -512,9 +536,73 @@ function enrichActivation(activation, planetName) {
   return result;
 }
 
+/**
+ * Detect juxtapositions across personality and design activations
+ * Juxtaposition occurs when BOTH the exalting planet AND the detrimenting planet
+ * for a specific gate.line are present in the chart (one in personality, one in design)
+ *
+ * This is EXTREMELY rare - requires the exact two specific planets in the same
+ * gate.line split across personality/design
+ *
+ * @param {Object} personalityActivations - All personality planet activations
+ * @param {Object} designActivations - All design planet activations
+ */
+function detectJuxtapositions(personalityActivations, designActivations) {
+  // For each possible gate.line combination (64 gates × 6 lines = 384 total)
+  for (let gate = 1; gate <= 64; gate++) {
+    for (let line = 1; line <= 6; line++) {
+      const gateKey = `${gate}.${line}`;
+      const fixingData = exaltationsDetriments[gateKey];
+
+      // Skip if this gate.line doesn't have both exaltation AND detriment defined
+      if (!fixingData || !fixingData.exaltation || !fixingData.detriment) {
+        continue;
+      }
+
+      // Track if we find the exalting planet and detrimenting planet at this gate.line
+      let exaltingActivation = null;
+      let detrimentingActivation = null;
+
+      // Check all personality planets
+      for (const planet in personalityActivations) {
+        const activation = personalityActivations[planet];
+        if (activation.gate === gate && activation.line === line) {
+          if (planet === fixingData.exaltation) {
+            exaltingActivation = activation;
+          }
+          if (planet === fixingData.detriment) {
+            detrimentingActivation = activation;
+          }
+        }
+      }
+
+      // Check all design planets
+      for (const planet in designActivations) {
+        const activation = designActivations[planet];
+        if (activation.gate === gate && activation.line === line) {
+          if (planet === fixingData.exaltation) {
+            exaltingActivation = activation;
+          }
+          if (planet === fixingData.detriment) {
+            detrimentingActivation = activation;
+          }
+        }
+      }
+
+      // If we found BOTH the exalting and detrimenting planets at this gate.line,
+      // mark both activations as juxtaposition
+      if (exaltingActivation && detrimentingActivation) {
+        exaltingActivation.fixingState = 'juxtaposition';
+        detrimentingActivation.fixingState = 'juxtaposition';
+      }
+    }
+  }
+}
+
 module.exports = {
   aminoAcidByGate,
   codonByGate,
   exaltationsDetriments,
-  enrichActivation
+  enrichActivation,
+  detectJuxtapositions
 };
