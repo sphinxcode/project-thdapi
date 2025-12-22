@@ -15,8 +15,10 @@ import readline from 'readline';
 // Load Swiss Ephemeris version
 const { calculateHumanDesign } = require('./src/calculations-cjs.cjs');
 const { transformToV1, transformToV2 } = require('./src/response-transformers.cjs');
+const { createCompositeChart } = require('./src/composite-transformers.cjs');
 console.log('✅ Swiss Ephemeris version loaded');
 console.log('✅ V1/V2 Response Transformers loaded');
+console.log('✅ Composite Chart Transformer loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -267,6 +269,140 @@ app.post('/api/v2/data-tooltip', authMiddleware, async (req, res) => {
   }
 });
 
+// =============================================================================
+// Composite Endpoint - Relationship Chart Analysis
+// Merges two individual charts to show relationship dynamics
+// =============================================================================
+app.post('/api/v1/composite', authMiddleware, async (req, res) => {
+  try {
+    const {
+      // Person A parameters (same as v1 API)
+      birthDate, birthTime, birthLocation, latitude, longitude,
+      // Person B parameters
+      birthDate1, birthTime1, birthLocation1, latitude1, longitude1
+    } = req.body;
+
+    // Validation for Person A
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required for Person A',
+      });
+    }
+
+    // Validation for Person B
+    if (!birthDate1 || !birthTime1 || !birthLocation1) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate1, birthTime1, and birthLocation1 are required for Person B',
+      });
+    }
+
+    // Calculate Person A's chart
+    const resultA = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Calculate Person B's chart
+    const resultB = await calculateHumanDesign({
+      birthDate: birthDate1,
+      birthTime: birthTime1,
+      birthLocation: birthLocation1,
+      latitude: latitude1,
+      longitude: longitude1,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform both to V1 format
+    const v1A = transformToV1(resultA, false);
+    const v1B = transformToV1(resultB, false);
+
+    // Create composite chart
+    const composite = createCompositeChart(resultA, resultB, v1A, v1B);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v1-composite'
+      },
+      data: composite
+    });
+  } catch (error) {
+    console.error('Error calculating Composite Chart:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
+// Composite Endpoint with Tooltips
+// =============================================================================
+app.post('/api/v1/composite-tooltip', authMiddleware, async (req, res) => {
+  try {
+    const {
+      birthDate, birthTime, birthLocation, latitude, longitude,
+      birthDate1, birthTime1, birthLocation1, latitude1, longitude1
+    } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required for Person A',
+      });
+    }
+
+    if (!birthDate1 || !birthTime1 || !birthLocation1) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate1, birthTime1, and birthLocation1 are required for Person B',
+      });
+    }
+
+    const resultA = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    const resultB = await calculateHumanDesign({
+      birthDate: birthDate1,
+      birthTime: birthTime1,
+      birthLocation: birthLocation1,
+      latitude: latitude1,
+      longitude: longitude1,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform with tooltips
+    const v1A = transformToV1(resultA, true);
+    const v1B = transformToV1(resultB, true);
+
+    const composite = createCompositeChart(resultA, resultB, v1A, v1B);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v1-composite-tooltip'
+      },
+      data: composite
+    });
+  } catch (error) {
+    console.error('Error calculating Composite Chart with tooltips:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
   try {
     const mcpServer = spawn('node', ['index-with-swiss.js']);
@@ -317,13 +453,14 @@ app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
-    version: '2.1.0',
+    version: '2.2.0',
     auth: 'Bearer token required',
     features: {
       staticDatabase: 'Major cities worldwide',
       googleMapsIntegration: GOOGLE_MAPS_API_KEY ? 'Enabled (fallback for unknown locations)' : 'Disabled',
       asteroids: 'Chiron, Ceres, Pallas, Juno, Vesta',
-      chartAngles: 'AC, MC, IC, DC'
+      chartAngles: 'AC, MC, IC, DC',
+      compositeCharts: 'Relationship analysis with electromagnetic, compromise, dominance, companionship channels'
     },
     endpoints: {
       health: '/health (public)',
@@ -331,6 +468,8 @@ app.get('/', (req, res) => {
       v1Tooltip: '/api/v1/data-tooltip - Lean enterprise (full tooltips)',
       v2: '/api/v2/data - Full featured (empty tooltips)',
       v2Tooltip: '/api/v2/data-tooltip - Full featured (full tooltips)',
+      composite: '/api/v1/composite - Relationship chart (empty tooltips)',
+      compositeTooltip: '/api/v1/composite-tooltip - Relationship chart (full tooltips)',
       legacy: '/api/human-design - Original format',
       mcp: '/api/mcp/calculate',
     },
