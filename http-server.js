@@ -15,8 +15,10 @@ import readline from 'readline';
 // Load Swiss Ephemeris version
 const { calculateHumanDesign } = require('./src/calculations-cjs.cjs');
 const { transformToV1, transformToV2 } = require('./src/response-transformers.cjs');
+const { createCompositeChart } = require('./src/composite-transformers.cjs');
 console.log('✅ Swiss Ephemeris version loaded');
 console.log('✅ V1/V2 Response Transformers loaded');
+console.log('✅ Composite Chart Transformer loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -267,6 +269,186 @@ app.post('/api/v2/data-tooltip', authMiddleware, async (req, res) => {
   }
 });
 
+// =============================================================================
+// Composite Endpoint - Relationship Chart Analysis
+// Merges two individual charts to show relationship dynamics
+// =============================================================================
+app.post('/api/v1/composite', authMiddleware, async (req, res) => {
+  try {
+    const {
+      // Person A parameters
+      date, timezone, location, latitude, longitude,
+      // Person B parameters
+      date1, timezone1, location1, latitude1, longitude1
+    } = req.body;
+
+    // Validation for Person A
+    if (!date || !timezone) {
+      return res.status(400).json({
+        success: false,
+        error: 'date and timezone are required for Person A',
+      });
+    }
+
+    // Validation for Person B
+    if (!date1 || !timezone1) {
+      return res.status(400).json({
+        success: false,
+        error: 'date1 and timezone1 are required for Person B',
+      });
+    }
+
+    // Parse ISO 8601 date/time for Person A
+    const parsedDateA = new Date(date);
+    if (isNaN(parsedDateA.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format for Person A. Use ISO 8601 format (e.g., 1981-03-16T13:01:00)',
+      });
+    }
+    const birthDateA = parsedDateA.toISOString().split('T')[0];
+    const birthTimeA = parsedDateA.toISOString().split('T')[1].substring(0, 5);
+
+    // Parse ISO 8601 date/time for Person B
+    const parsedDateB = new Date(date1);
+    if (isNaN(parsedDateB.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format for Person B. Use ISO 8601 format (e.g., 1990-07-21T08:30:00)',
+      });
+    }
+    const birthDateB = parsedDateB.toISOString().split('T')[0];
+    const birthTimeB = parsedDateB.toISOString().split('T')[1].substring(0, 5);
+
+    // Calculate Person A's chart
+    const resultA = await calculateHumanDesign({
+      birthDate: birthDateA,
+      birthTime: birthTimeA,
+      birthLocation: location || timezone, // Use timezone as location if not provided
+      latitude,
+      longitude,
+      timezone,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Calculate Person B's chart
+    const resultB = await calculateHumanDesign({
+      birthDate: birthDateB,
+      birthTime: birthTimeB,
+      birthLocation: location1 || timezone1,
+      latitude: latitude1,
+      longitude: longitude1,
+      timezone: timezone1,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform both to V1 format
+    const v1A = transformToV1(resultA, false);
+    const v1B = transformToV1(resultB, false);
+
+    // Create composite chart
+    const composite = createCompositeChart(resultA, resultB, v1A, v1B);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v1-composite'
+      },
+      data: composite
+    });
+  } catch (error) {
+    console.error('Error calculating Composite Chart:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
+// Composite Endpoint with Tooltips
+// =============================================================================
+app.post('/api/v1/composite-tooltip', authMiddleware, async (req, res) => {
+  try {
+    const {
+      date, timezone, location, latitude, longitude,
+      date1, timezone1, location1, latitude1, longitude1
+    } = req.body;
+
+    if (!date || !timezone) {
+      return res.status(400).json({
+        success: false,
+        error: 'date and timezone are required for Person A',
+      });
+    }
+
+    if (!date1 || !timezone1) {
+      return res.status(400).json({
+        success: false,
+        error: 'date1 and timezone1 are required for Person B',
+      });
+    }
+
+    const parsedDateA = new Date(date);
+    if (isNaN(parsedDateA.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format for Person A. Use ISO 8601 format.',
+      });
+    }
+    const birthDateA = parsedDateA.toISOString().split('T')[0];
+    const birthTimeA = parsedDateA.toISOString().split('T')[1].substring(0, 5);
+
+    const parsedDateB = new Date(date1);
+    if (isNaN(parsedDateB.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format for Person B. Use ISO 8601 format.',
+      });
+    }
+    const birthDateB = parsedDateB.toISOString().split('T')[0];
+    const birthTimeB = parsedDateB.toISOString().split('T')[1].substring(0, 5);
+
+    const resultA = await calculateHumanDesign({
+      birthDate: birthDateA,
+      birthTime: birthTimeA,
+      birthLocation: location || timezone,
+      latitude,
+      longitude,
+      timezone,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    const resultB = await calculateHumanDesign({
+      birthDate: birthDateB,
+      birthTime: birthTimeB,
+      birthLocation: location1 || timezone1,
+      latitude: latitude1,
+      longitude: longitude1,
+      timezone: timezone1,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform with tooltips
+    const v1A = transformToV1(resultA, true);
+    const v1B = transformToV1(resultB, true);
+
+    const composite = createCompositeChart(resultA, resultB, v1A, v1B);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v1-composite-tooltip'
+      },
+      data: composite
+    });
+  } catch (error) {
+    console.error('Error calculating Composite Chart with tooltips:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
   try {
     const mcpServer = spawn('node', ['index-with-swiss.js']);
@@ -317,13 +499,14 @@ app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
-    version: '2.1.0',
+    version: '2.2.0',
     auth: 'Bearer token required',
     features: {
       staticDatabase: 'Major cities worldwide',
       googleMapsIntegration: GOOGLE_MAPS_API_KEY ? 'Enabled (fallback for unknown locations)' : 'Disabled',
       asteroids: 'Chiron, Ceres, Pallas, Juno, Vesta',
-      chartAngles: 'AC, MC, IC, DC'
+      chartAngles: 'AC, MC, IC, DC',
+      compositeCharts: 'Relationship analysis with electromagnetic, compromise, dominance, companionship channels'
     },
     endpoints: {
       health: '/health (public)',
@@ -331,6 +514,8 @@ app.get('/', (req, res) => {
       v1Tooltip: '/api/v1/data-tooltip - Lean enterprise (full tooltips)',
       v2: '/api/v2/data - Full featured (empty tooltips)',
       v2Tooltip: '/api/v2/data-tooltip - Full featured (full tooltips)',
+      composite: '/api/v1/composite - Relationship chart (empty tooltips)',
+      compositeTooltip: '/api/v1/composite-tooltip - Relationship chart (full tooltips)',
       legacy: '/api/human-design - Original format',
       mcp: '/api/mcp/calculate',
     },
