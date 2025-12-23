@@ -16,9 +16,11 @@ import readline from 'readline';
 const { calculateHumanDesign } = require('./src/calculations-cjs.cjs');
 const { transformToV1, transformToV2 } = require('./src/response-transformers.cjs');
 const { createCompositeChart } = require('./src/composite-transformers.cjs');
+const { getMoonTransitRange, getAllPlanetsTransitRange, HD_PLANET_ORDER } = require('./src/transit-calculations.cjs');
 console.log('✅ Swiss Ephemeris version loaded');
 console.log('✅ V1/V2 Response Transformers loaded');
 console.log('✅ Composite Chart Transformer loaded');
+console.log('✅ Transit Calculations loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -58,12 +60,13 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'human-design-mcp-server',
-    version: '1.1.0-hybrid-location',
+    version: '2.3.0',
     timestamp: new Date().toISOString(),
     auth: 'enabled',
     features: {
       staticDatabase: true,
-      googleMapsIntegration: !!GOOGLE_MAPS_API_KEY
+      googleMapsIntegration: !!GOOGLE_MAPS_API_KEY,
+      transitEndpoints: true
     }
   });
 });
@@ -449,18 +452,163 @@ app.post('/api/mcp/calculate', authMiddleware, async (req, res) => {
   }
 });
 
+// =============================================================================
+// Transit Endpoints - Universal planetary positions (no birth data needed)
+// =============================================================================
+
+/**
+ * GET /api/transit/moon-range
+ * Get Moon transit positions over a date range
+ *
+ * Query Parameters:
+ * - startDate (required): ISO date string (YYYY-MM-DD)
+ * - endDate (required): ISO date string (YYYY-MM-DD)
+ * - granularity (optional): "daily" | "hourly" - defaults to "daily"
+ *
+ * Returns array of Moon positions with gate, line, color, tone, sign
+ */
+app.get('/api/transit/moon-range', authMiddleware, async (req, res) => {
+  try {
+    const { startDate, endDate, granularity = 'daily' } = req.query;
+
+    // Validation
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        error: 'startDate and endDate query parameters are required',
+        example: '/api/transit/moon-range?startDate=2024-01-01&endDate=2024-01-07'
+      });
+    }
+
+    // Validate date format
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format. Use ISO format: YYYY-MM-DD'
+      });
+    }
+
+    // Validate granularity
+    if (granularity !== 'daily' && granularity !== 'hourly') {
+      return res.status(400).json({
+        success: false,
+        error: 'granularity must be "daily" or "hourly"'
+      });
+    }
+
+    // Calculate transits
+    const transits = await getMoonTransitRange(startDate, endDate, granularity);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'transit/moon-range',
+        planet: 'Moon',
+        startDate,
+        endDate,
+        granularity,
+        count: transits.length,
+        note: 'Moon transits through all 64 gates in ~28 days, spending ~10-11 hours per gate'
+      },
+      data: transits
+    });
+
+  } catch (error) {
+    console.error('Error calculating Moon transit range:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/transit-range
+ * Get all 13 Human Design planets' transit positions over a date range
+ *
+ * Query Parameters:
+ * - startDate (required): ISO date string (YYYY-MM-DD)
+ * - endDate (required): ISO date string (YYYY-MM-DD)
+ * - granularity (optional): "daily" | "hourly" - defaults to "daily"
+ *
+ * Returns array of all planet positions with gate, line, color, tone, sign
+ */
+app.get('/api/transit-range', authMiddleware, async (req, res) => {
+  try {
+    const { startDate, endDate, granularity = 'daily' } = req.query;
+
+    // Validation
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        error: 'startDate and endDate query parameters are required',
+        example: '/api/transit-range?startDate=2024-01-01&endDate=2024-01-07'
+      });
+    }
+
+    // Validate date format
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format. Use ISO format: YYYY-MM-DD'
+      });
+    }
+
+    // Validate granularity
+    if (granularity !== 'daily' && granularity !== 'hourly') {
+      return res.status(400).json({
+        success: false,
+        error: 'granularity must be "daily" or "hourly"'
+      });
+    }
+
+    // Calculate transits
+    const transits = await getAllPlanetsTransitRange(startDate, endDate, granularity);
+
+    res.json({
+      success: true,
+      meta: {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoint: 'transit-range',
+        planets: HD_PLANET_ORDER,
+        startDate,
+        endDate,
+        granularity,
+        count: transits.length,
+        note: 'All 13 Human Design planets: Sun, Earth, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto, Rahu (North Node), Ketu (South Node)'
+      },
+      data: transits
+    });
+
+  } catch (error) {
+    console.error('Error calculating all planets transit range:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
-    version: '2.2.0',
+    version: '2.3.0',
     auth: 'Bearer token required',
     features: {
       staticDatabase: 'Major cities worldwide',
       googleMapsIntegration: GOOGLE_MAPS_API_KEY ? 'Enabled (fallback for unknown locations)' : 'Disabled',
       asteroids: 'Chiron, Ceres, Pallas, Juno, Vesta',
       chartAngles: 'AC, MC, IC, DC',
-      compositeCharts: 'Relationship analysis with electromagnetic, compromise, dominance, companionship channels'
+      compositeCharts: 'Relationship analysis with electromagnetic, compromise, dominance, companionship channels',
+      transits: 'Universal planetary transit positions over date ranges'
     },
     endpoints: {
       health: '/health (public)',
@@ -470,8 +618,25 @@ app.get('/', (req, res) => {
       v2Tooltip: '/api/v2/data-tooltip - Full featured (full tooltips)',
       composite: '/api/v1/composite - Relationship chart (empty tooltips)',
       compositeTooltip: '/api/v1/composite-tooltip - Relationship chart (full tooltips)',
+      transitMoonRange: 'GET /api/transit/moon-range - Moon transits over date range',
+      transitRange: 'GET /api/transit-range - All 13 planets transits over date range',
       legacy: '/api/human-design - Original format',
       mcp: '/api/mcp/calculate',
+    },
+    transitEndpoints: {
+      moonRange: {
+        method: 'GET',
+        path: '/api/transit/moon-range',
+        params: 'startDate, endDate (required), granularity (optional: daily|hourly)',
+        example: '/api/transit/moon-range?startDate=2024-01-01&endDate=2024-01-07&granularity=daily'
+      },
+      allPlanets: {
+        method: 'GET',
+        path: '/api/transit-range',
+        params: 'startDate, endDate (required), granularity (optional: daily|hourly)',
+        example: '/api/transit-range?startDate=2024-01-01&endDate=2024-01-07',
+        planets: ['Sun', 'Earth', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Rahu', 'Ketu']
+      }
     },
     documentation: 'https://github.com/sphinxcode/humandesignmcp',
   });
