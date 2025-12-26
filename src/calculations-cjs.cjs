@@ -516,7 +516,7 @@ async function calculateHumanDesign(params) {
 
     // Collect all gates from both Personality and Design
     const allGates = new Set();
-    const planetOrder = ['Sun', 'Earth', 'Rahu', 'Ketu', 'Moon', 'Mercury', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+    const planetOrder = ['Sun', 'Earth', 'Rahu', 'Ketu', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
 
     planetOrder.forEach(planet => {
       if (personality[planet]) allGates.add(personality[planet].gate);
