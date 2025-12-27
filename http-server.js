@@ -273,10 +273,11 @@ app.post('/api/v2/data-tooltip', authMiddleware, async (req, res) => {
 });
 
 // =============================================================================
-// V3 Endpoint - True Inner Authority (Nodal Exclusion)
-// Philosophy: Nodes (Rahu/Ketu) represent environment, trajectory, karmic
-// lessons - NOT inner decision-making mechanics. When a channel has a gate
-// activated EXCLUSIVELY by nodes, that channel is excluded from Type/Authority.
+// V3 Endpoint - True Inner Authority (North Node Exclusion)
+// Philosophy: 
+// - North Node (Rahu) = FUTURE trajectory - excluded until Uranus Opposition (~age 38-43)
+// - South Node (Ketu) = Already conditioned energy - VALID for authority
+// When a channel has a gate activated EXCLUSIVELY by North Node, it's excluded.
 // =============================================================================
 app.post('/api/v3/data', authMiddleware, async (req, res) => {
   try {
@@ -809,10 +810,14 @@ app.get('/', (req, res) => {
     },
     v3Concept: {
       name: 'True Inner Authority',
-      philosophy: 'Nodes (Rahu/Ketu) represent environment, trajectory, and karmic lessons - NOT inner decision-making',
-      rule: 'Gates activated EXCLUSIVELY by nodes are excluded from Type/Authority calculation',
-      centersStillDefine: 'Nodal channels still define centers for conditioning awareness',
-      typeCanChange: 'Type may change (e.g., Generator with only nodal Sacral becomes Reflector)'
+      philosophy: {
+        northNode: 'Rahu = FUTURE trajectory - excluded until Uranus Opposition (~age 38-43)',
+        southNode: 'Ketu = Already conditioned energy - VALID for authority (has defined you since birth)'
+      },
+      rule: 'Gates activated EXCLUSIVELY by North Node are excluded from Type/Authority calculation',
+      uranusOpposition: 'At age ~38-43, North Node trajectory activates and chart transitions to standard Type/Authority',
+      centersStillDefine: 'All nodal channels still define centers for conditioning awareness',
+      typeCanChange: 'Type may change if North Node exclusively defines key centers (e.g., Generator → Reflector)'
     },
     transitEndpoints: {
       moonRange: {

@@ -1155,10 +1155,19 @@ async function calculateHumanDesign(params) {
     // =========================================================================
     // V3: TRUE INNER AUTHORITY CALCULATION
     // =========================================================================
-    // Philosophy: Nodes (Rahu/Ketu) represent environment, trajectory, karmic 
-    // lessons - NOT inner decision-making mechanics. When a channel has a gate
-    // activated EXCLUSIVELY by nodes (no other planet on same gate), that 
-    // channel is excluded from Type/Authority calculation.
+    // Philosophy: 
+    // - NORTH NODE (Rahu) = Future trajectory - NOT yet activated
+    //   Represents where you're going environmentally. Activates at Uranus 
+    //   Opposition (~age 38-43). Before then, channels formed exclusively by 
+    //   Rahu are excluded from Type/Authority calculation.
+    //
+    // - SOUTH NODE (Ketu) = Already conditioned energy - VALID for authority
+    //   Represents where you've been environmentally. This energy has already 
+    //   defined and conditioned the person from birth, so it counts as a valid
+    //   inner authority activator.
+    //
+    // After Uranus Opposition, North Node trajectory begins and the chart 
+    // "unlocks" to the standard Type/Authority.
     // =========================================================================
 
     // Step 1: Build gate activation map { gate: [list of activating planets] }
@@ -1180,29 +1189,36 @@ async function calculateHumanDesign(params) {
       }
     });
 
-    // Step 2: Helper to check if a gate is nodally-exclusive
-    // A gate is nodally-exclusive if ONLY Rahu and/or Ketu activate it
-    const NODAL_PLANETS = ['Rahu', 'Ketu'];
-    function isNodallyExclusive(gate) {
+    // Step 2: Helper to check if a gate is North Node exclusive
+    // NUANCE: Only North Node (Rahu) is excluded because it represents FUTURE trajectory
+    // South Node (Ketu) represents ALREADY CONDITIONED energy - it's valid for authority
+    // Philosophy: South Node = where you've been environmentally (already integrated)
+    //             North Node = where you're going (activates at Uranus Opposition ~age 40)
+    const NORTH_NODE_ONLY = ['Rahu'];
+
+    function isNorthNodeExclusive(gate) {
       const activators = gateActivations[gate] || [];
+      // Gate is excluded only if activated EXCLUSIVELY by Rahu (North Node)
+      // Ketu (South Node) counts as a valid activator since it's already-conditioned energy
       return activators.length > 0 &&
-        activators.every(p => NODAL_PLANETS.includes(p));
+        activators.every(p => NORTH_NODE_ONLY.includes(p));
     }
 
-    // Step 3: Identify channels with nodally-exclusive gates
+    // Step 3: Identify channels with North Node exclusive gates
     const excludedChannels = [];
     const trueInnerChannels = channelKeys.filter(channelKey => {
       const [g1, g2] = channelKey.split('-').map(Number);
-      const g1Exclusive = isNodallyExclusive(g1);
-      const g2Exclusive = isNodallyExclusive(g2);
+      const g1Exclusive = isNorthNodeExclusive(g1);
+      const g2Exclusive = isNorthNodeExclusive(g2);
 
-      // Exclude if EITHER gate is nodally-exclusive
+      // Exclude if EITHER gate is activated ONLY by North Node
       if (g1Exclusive || g2Exclusive) {
         excludedChannels.push({
           channel: channelKey,
           nodalGate: g1Exclusive ? g1 : g2,
           nodalPlanets: gateActivations[g1Exclusive ? g1 : g2],
-          reason: `Gate ${g1Exclusive ? g1 : g2} activated exclusively by ${gateActivations[g1Exclusive ? g1 : g2].join('/')}`
+          reason: `Gate ${g1Exclusive ? g1 : g2} activated exclusively by Rahu (North Node) - future trajectory not yet activated`,
+          note: 'This channel will activate at Uranus Opposition (~age 38-43) when North Node trajectory begins'
         });
         return false;
       }
@@ -1272,16 +1288,16 @@ async function calculateHumanDesign(params) {
     if (nodalExclusionApplied) {
       const channelList = excludedChannels.map(ec => `Channel ${ec.channel} (${ec.reason})`).join('; ');
       if (typeChanged && authorityChanged) {
-        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) formed exclusively by nodal placements: ${channelList}. In the True Inner Authority framework, nodes represent environmental themes rather than inner decision-making power. Excluding these channels, your true inner type is ${v3Type} with ${v3Authority} Authority (standard calculation showed ${type} with ${authority}).`;
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) formed exclusively by North Node (Rahu): ${channelList}. The North Node represents your FUTURE environmental trajectory, which activates at Uranus Opposition (age ~38-43). Until then, these channels don't define your True Inner Authority. Your current true inner type is ${v3Type} with ${v3Authority} Authority (standard calculation showed ${type} with ${authority}). Note: South Node (Ketu) activations ARE valid as they represent already-conditioned energy from the first half of life.`;
       } else if (typeChanged) {
-        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with nodally-exclusive gates: ${channelList}. Excluding these for Type calculation changes your type from ${type} to ${v3Type}.`;
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with North Node exclusive gates: ${channelList}. The North Node represents future trajectory (activates at Uranus Opposition ~age 40). Excluding these changes your type from ${type} to ${v3Type}. After Uranus Opposition, your chart will transition to standard ${type} type.`;
       } else if (authorityChanged) {
-        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with nodally-exclusive gates: ${channelList}. Excluding these for Authority calculation changes your authority from ${authority} to ${v3Authority}.`;
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with North Node exclusive gates: ${channelList}. The North Node represents future trajectory (activates at Uranus Opposition ~age 40). Excluding these changes your authority from ${authority} to ${v3Authority}. After Uranus Opposition, your chart will transition to standard ${authority} authority.`;
       } else {
-        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with nodally-exclusive gates: ${channelList}. However, excluding these does not change your Type or Authority.`;
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with North Node exclusive gates: ${channelList}. However, excluding these does not change your Type or Authority since other channels already define these centers.`;
       }
     } else {
-      v3Explanation = 'No nodally-exclusive gates detected. Your True Inner Authority matches standard calculation.';
+      v3Explanation = 'No North Node exclusive gates detected. South Node activations are valid (already-conditioned energy). Your True Inner Authority matches standard calculation.';
     }
 
     // V3 True Inner Authority object
