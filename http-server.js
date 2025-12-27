@@ -273,6 +273,125 @@ app.post('/api/v2/data-tooltip', authMiddleware, async (req, res) => {
 });
 
 // =============================================================================
+// V3 Endpoint - True Inner Authority (Nodal Exclusion)
+// Philosophy: Nodes (Rahu/Ketu) represent environment, trajectory, karmic
+// lessons - NOT inner decision-making mechanics. When a channel has a gate
+// activated EXCLUSIVELY by nodes, that channel is excluded from Type/Authority.
+// =============================================================================
+app.post('/api/v3/data', authMiddleware, async (req, res) => {
+  try {
+    const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required',
+      });
+    }
+
+    const fullResult = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform to V2 format (without tooltips) as the base
+    const v2Result = transformToV2(fullResult, false);
+
+    // Add V3 True Inner Authority data
+    const v3Result = {
+      ...v2Result,
+      // Override chart with V3 Type/Authority
+      chart: {
+        ...v2Result.chart,
+        type: fullResult.trueInnerAuthority.v3Type,
+        authority: fullResult.trueInnerAuthority.v3Authority,
+        // Keep standard values for reference
+        standardType: fullResult.trueInnerAuthority.v2Type,
+        standardAuthority: fullResult.trueInnerAuthority.v2Authority,
+      },
+      // Include detailed True Inner Authority analysis
+      trueInnerAuthority: fullResult.trueInnerAuthority,
+      // Include gate activations map for transparency
+      gateActivations: fullResult.gateActivations,
+    };
+
+    res.json({
+      success: true,
+      meta: {
+        version: '3.0.0',
+        concept: 'True Inner Authority',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v3'
+      },
+      data: v3Result,
+    });
+  } catch (error) {
+    console.error('Error calculating Human Design (V3):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
+// V3 Endpoint with Tooltips - True Inner Authority + Full Tooltips
+// =============================================================================
+app.post('/api/v3/data-tooltip', authMiddleware, async (req, res) => {
+  try {
+    const { birthDate, birthTime, birthLocation, latitude, longitude } = req.body;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate, birthTime, and birthLocation are required',
+      });
+    }
+
+    const fullResult = await calculateHumanDesign({
+      birthDate,
+      birthTime,
+      birthLocation,
+      latitude,
+      longitude,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    });
+
+    // Transform to V2 format WITH tooltips as the base
+    const v2Result = transformToV2(fullResult, true);
+
+    // Add V3 True Inner Authority data
+    const v3Result = {
+      ...v2Result,
+      chart: {
+        ...v2Result.chart,
+        type: fullResult.trueInnerAuthority.v3Type,
+        authority: fullResult.trueInnerAuthority.v3Authority,
+        standardType: fullResult.trueInnerAuthority.v2Type,
+        standardAuthority: fullResult.trueInnerAuthority.v2Authority,
+      },
+      trueInnerAuthority: fullResult.trueInnerAuthority,
+      gateActivations: fullResult.gateActivations,
+    };
+
+    res.json({
+      success: true,
+      meta: {
+        version: '3.0.0',
+        concept: 'True Inner Authority',
+        timestamp: new Date().toISOString(),
+        endpoint: 'v3-tooltip'
+      },
+      data: v3Result,
+    });
+  } catch (error) {
+    console.error('Error calculating Human Design (V3-tooltip):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =============================================================================
 // Composite Endpoint - Relationship Chart Analysis
 // Merges two individual charts to show relationship dynamics
 // =============================================================================
@@ -600,7 +719,7 @@ app.get('/api/transit-range', authMiddleware, async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     service: 'Human Design MCP Server',
-    version: '2.3.0',
+    version: '4.0.0',
     auth: 'Bearer token required',
     features: {
       staticDatabase: 'Major cities worldwide',
@@ -608,7 +727,8 @@ app.get('/', (req, res) => {
       asteroids: 'Chiron, Ceres, Pallas, Juno, Vesta',
       chartAngles: 'AC, MC, IC, DC',
       compositeCharts: 'Relationship analysis with electromagnetic, compromise, dominance, companionship channels',
-      transits: 'Universal planetary transit positions over date ranges'
+      transits: 'Universal planetary transit positions over date ranges',
+      trueInnerAuthority: 'V3 endpoint with nodal exclusion logic for Type/Authority calculation'
     },
     endpoints: {
       health: '/health (public)',
@@ -616,12 +736,21 @@ app.get('/', (req, res) => {
       v1Tooltip: '/api/v1/data-tooltip - Lean enterprise (full tooltips)',
       v2: '/api/v2/data - Full featured (empty tooltips)',
       v2Tooltip: '/api/v2/data-tooltip - Full featured (full tooltips)',
+      v3: '/api/v3/data - True Inner Authority (nodal exclusion)',
+      v3Tooltip: '/api/v3/data-tooltip - True Inner Authority (full tooltips)',
       composite: '/api/v1/composite - Relationship chart (empty tooltips)',
       compositeTooltip: '/api/v1/composite-tooltip - Relationship chart (full tooltips)',
       transitMoonRange: 'GET /api/transit/moon-range - Moon transits over date range',
       transitRange: 'GET /api/transit-range - All 13 planets transits over date range',
       legacy: '/api/human-design - Original format',
       mcp: '/api/mcp/calculate',
+    },
+    v3Concept: {
+      name: 'True Inner Authority',
+      philosophy: 'Nodes (Rahu/Ketu) represent environment, trajectory, and karmic lessons - NOT inner decision-making',
+      rule: 'Gates activated EXCLUSIVELY by nodes are excluded from Type/Authority calculation',
+      centersStillDefine: 'Nodal channels still define centers for conditioning awareness',
+      typeCanChange: 'Type may change (e.g., Generator with only nodal Sacral becomes Reflector)'
     },
     transitEndpoints: {
       moonRange: {

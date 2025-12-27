@@ -1152,6 +1152,152 @@ async function calculateHumanDesign(params) {
       }
     }
 
+    // =========================================================================
+    // V3: TRUE INNER AUTHORITY CALCULATION
+    // =========================================================================
+    // Philosophy: Nodes (Rahu/Ketu) represent environment, trajectory, karmic 
+    // lessons - NOT inner decision-making mechanics. When a channel has a gate
+    // activated EXCLUSIVELY by nodes (no other planet on same gate), that 
+    // channel is excluded from Type/Authority calculation.
+    // =========================================================================
+
+    // Step 1: Build gate activation map { gate: [list of activating planets] }
+    const gateActivations = {};
+    planetOrder.forEach(planet => {
+      if (personality[planet]) {
+        const gate = personality[planet].gate;
+        gateActivations[gate] = gateActivations[gate] || [];
+        if (!gateActivations[gate].includes(planet)) {
+          gateActivations[gate].push(planet);
+        }
+      }
+      if (design[planet]) {
+        const gate = design[planet].gate;
+        gateActivations[gate] = gateActivations[gate] || [];
+        if (!gateActivations[gate].includes(planet)) {
+          gateActivations[gate].push(planet);
+        }
+      }
+    });
+
+    // Step 2: Helper to check if a gate is nodally-exclusive
+    // A gate is nodally-exclusive if ONLY Rahu and/or Ketu activate it
+    const NODAL_PLANETS = ['Rahu', 'Ketu'];
+    function isNodallyExclusive(gate) {
+      const activators = gateActivations[gate] || [];
+      return activators.length > 0 &&
+        activators.every(p => NODAL_PLANETS.includes(p));
+    }
+
+    // Step 3: Identify channels with nodally-exclusive gates
+    const excludedChannels = [];
+    const trueInnerChannels = channelKeys.filter(channelKey => {
+      const [g1, g2] = channelKey.split('-').map(Number);
+      const g1Exclusive = isNodallyExclusive(g1);
+      const g2Exclusive = isNodallyExclusive(g2);
+
+      // Exclude if EITHER gate is nodally-exclusive
+      if (g1Exclusive || g2Exclusive) {
+        excludedChannels.push({
+          channel: channelKey,
+          nodalGate: g1Exclusive ? g1 : g2,
+          nodalPlanets: gateActivations[g1Exclusive ? g1 : g2],
+          reason: `Gate ${g1Exclusive ? g1 : g2} activated exclusively by ${gateActivations[g1Exclusive ? g1 : g2].join('/')}`
+        });
+        return false;
+      }
+      return true;
+    });
+
+    // Step 4: Calculate "true inner" defined centers (for Type/Authority only)
+    const trueInnerCenters = new Set();
+    trueInnerChannels.forEach(channelKey => {
+      if (CENTERS_BY_CHANNEL[channelKey]) {
+        CENTERS_BY_CHANNEL[channelKey].forEach(center => trueInnerCenters.add(center));
+      }
+    });
+
+    // Step 5: Calculate V3 Type
+    const hasTrueSacral = trueInnerCenters.has('Sacral');
+    const trueMotorToThroat = hasMotorToThroat(trueInnerChannels, trueInnerCenters);
+
+    let v3Type = 'Reflector';
+    if (hasTrueSacral && trueMotorToThroat) {
+      v3Type = 'Manifesting Generator';
+    } else if (hasTrueSacral) {
+      v3Type = 'Generator';
+    } else if (trueMotorToThroat) {
+      v3Type = 'Manifestor';
+    } else if (trueInnerCenters.size > 0) {
+      v3Type = 'Projector';
+    }
+
+    // Step 6: Calculate V3 Authority using true inner centers
+    let v3Authority = 'Lunar (wait 28 days)';
+
+    if (trueInnerCenters.has('SolarPlexus')) {
+      v3Authority = 'Emotional';
+    } else if (hasTrueSacral) {
+      v3Authority = 'Sacral';
+    } else if (trueInnerCenters.has('Spleen')) {
+      v3Authority = 'Splenic';
+    } else if (trueInnerCenters.has('Ego')) {
+      const egoDirectToThroat = trueInnerChannels.includes('21-45');
+      const egoViaGToThroat = trueInnerChannels.includes('25-51') &&
+        trueInnerChannels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33');
+
+      if (egoDirectToThroat || egoViaGToThroat) {
+        v3Authority = 'Ego Manifested';
+      } else {
+        v3Authority = 'Ego Projected';
+      }
+    } else if (trueInnerCenters.has('G')) {
+      const gToThroat = trueInnerChannels.some(ch => ch === '1-8' || ch === '7-31' || ch === '10-20' || ch === '13-33');
+      if (gToThroat && trueInnerCenters.has('Throat')) {
+        v3Authority = 'Self-Projected';
+      } else {
+        v3Authority = 'No Inner Authority (Environment)';
+      }
+    } else if (trueInnerCenters.has('Ajna') || trueInnerCenters.has('Head')) {
+      v3Authority = 'Mental/Environmental (Outer Authority)';
+    }
+
+    // Step 7: Determine if V3 differs from V2
+    const typeChanged = type !== v3Type;
+    const authorityChanged = authority !== v3Authority;
+    const nodalExclusionApplied = excludedChannels.length > 0;
+
+    // Step 8: Generate explanation
+    let v3Explanation = '';
+    if (nodalExclusionApplied) {
+      const channelList = excludedChannels.map(ec => `Channel ${ec.channel} (${ec.reason})`).join('; ');
+      if (typeChanged && authorityChanged) {
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) formed exclusively by nodal placements: ${channelList}. In the True Inner Authority framework, nodes represent environmental themes rather than inner decision-making power. Excluding these channels, your true inner type is ${v3Type} with ${v3Authority} Authority (standard calculation showed ${type} with ${authority}).`;
+      } else if (typeChanged) {
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with nodally-exclusive gates: ${channelList}. Excluding these for Type calculation changes your type from ${type} to ${v3Type}.`;
+      } else if (authorityChanged) {
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with nodally-exclusive gates: ${channelList}. Excluding these for Authority calculation changes your authority from ${authority} to ${v3Authority}.`;
+      } else {
+        v3Explanation = `Your chart has ${excludedChannels.length} channel(s) with nodally-exclusive gates: ${channelList}. However, excluding these does not change your Type or Authority.`;
+      }
+    } else {
+      v3Explanation = 'No nodally-exclusive gates detected. Your True Inner Authority matches standard calculation.';
+    }
+
+    // V3 True Inner Authority object
+    const trueInnerAuthority = {
+      v2Type: type,
+      v3Type,
+      v2Authority: authority,
+      v3Authority,
+      typeChanged,
+      authorityChanged,
+      nodalExclusionApplied,
+      excludedChannels,
+      trueInnerCenters: Array.from(trueInnerCenters).sort(),
+      explanation: v3Explanation
+    };
+
     return {
       // Birth Information
       birthInfo: {
@@ -1227,8 +1373,14 @@ async function calculateHumanDesign(params) {
       // Additional Astrological Points
       extras,
 
+      // V3: True Inner Authority (Nodal Exclusion Analysis)
+      trueInnerAuthority,
+
+      // Gate Activations Map (which planets activate which gates)
+      gateActivations,
+
       // Version
-      version: '3.8.0-fixed-mappings'
+      version: '4.0.0-true-inner-authority'
     };
 
   } catch (error) {
