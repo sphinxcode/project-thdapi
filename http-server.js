@@ -301,17 +301,48 @@ app.post('/api/v3/data', authMiddleware, async (req, res) => {
     // Transform to V2 format (without tooltips) as the base
     const v2Result = transformToV2(fullResult, false);
 
+    // Signature/NotSelf mappings for V3 Type
+    const signatureByType = {
+      'Generator': 'Satisfaction',
+      'Manifesting Generator': 'Satisfaction and Peace',
+      'Projector': 'Success',
+      'Manifestor': 'Peace',
+      'Reflector': 'Surprise'
+    };
+    const notSelfByType = {
+      'Generator': 'Frustration',
+      'Manifesting Generator': 'Frustration and Anger',
+      'Projector': 'Bitterness',
+      'Manifestor': 'Anger',
+      'Reflector': 'Disappointment'
+    };
+    const strategyByType = {
+      'Generator': 'Wait to Respond',
+      'Manifesting Generator': 'Wait to Respond',
+      'Projector': 'Wait for the Invitation',
+      'Manifestor': 'Inform',
+      'Reflector': 'Wait a Lunar Cycle'
+    };
+
+    const v3Type = fullResult.trueInnerAuthority.v3Type;
+
     // Add V3 True Inner Authority data
     const v3Result = {
       ...v2Result,
-      // Override chart with V3 Type/Authority
+      // Override chart with V3 Type/Authority/Strategy/Signature/NotSelf
       chart: {
         ...v2Result.chart,
-        type: fullResult.trueInnerAuthority.v3Type,
+        type: v3Type,
+        strategy: strategyByType[v3Type] || 'Wait a Lunar Cycle',
         authority: fullResult.trueInnerAuthority.v3Authority,
+        signature: signatureByType[v3Type] || 'Surprise',
+        notSelfTheme: notSelfByType[v3Type] || 'Disappointment',
         // Keep standard values for reference
         standardType: fullResult.trueInnerAuthority.v2Type,
+        standardStrategy: v2Result.chart.strategy,
         standardAuthority: fullResult.trueInnerAuthority.v2Authority,
+        standardSignature: v2Result.chart.signature,
+        standardNotSelfTheme: v2Result.chart.notSelfTheme,
       },
       // Include detailed True Inner Authority analysis
       trueInnerAuthority: fullResult.trueInnerAuthority,
@@ -361,15 +392,46 @@ app.post('/api/v3/data-tooltip', authMiddleware, async (req, res) => {
     // Transform to V2 format WITH tooltips as the base
     const v2Result = transformToV2(fullResult, true);
 
+    // Signature/NotSelf mappings for V3 Type
+    const signatureByType = {
+      'Generator': 'Satisfaction',
+      'Manifesting Generator': 'Satisfaction and Peace',
+      'Projector': 'Success',
+      'Manifestor': 'Peace',
+      'Reflector': 'Surprise'
+    };
+    const notSelfByType = {
+      'Generator': 'Frustration',
+      'Manifesting Generator': 'Frustration and Anger',
+      'Projector': 'Bitterness',
+      'Manifestor': 'Anger',
+      'Reflector': 'Disappointment'
+    };
+    const strategyByType = {
+      'Generator': 'Wait to Respond',
+      'Manifesting Generator': 'Wait to Respond',
+      'Projector': 'Wait for the Invitation',
+      'Manifestor': 'Inform',
+      'Reflector': 'Wait a Lunar Cycle'
+    };
+
+    const v3Type = fullResult.trueInnerAuthority.v3Type;
+
     // Add V3 True Inner Authority data
     const v3Result = {
       ...v2Result,
       chart: {
         ...v2Result.chart,
-        type: fullResult.trueInnerAuthority.v3Type,
+        type: v3Type,
+        strategy: strategyByType[v3Type] || 'Wait a Lunar Cycle',
         authority: fullResult.trueInnerAuthority.v3Authority,
+        signature: signatureByType[v3Type] || 'Surprise',
+        notSelfTheme: notSelfByType[v3Type] || 'Disappointment',
         standardType: fullResult.trueInnerAuthority.v2Type,
+        standardStrategy: v2Result.chart.strategy,
         standardAuthority: fullResult.trueInnerAuthority.v2Authority,
+        standardSignature: v2Result.chart.signature,
+        standardNotSelfTheme: v2Result.chart.notSelfTheme,
       },
       trueInnerAuthority: fullResult.trueInnerAuthority,
       gateActivations: fullResult.gateActivations,
